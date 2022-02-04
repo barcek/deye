@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# deye v 1.0.0
+# ©2022 barcek
+# License: MIT
+# @ github.com
+# /barcek/deye
+
+allows=()
+
+if [ $1 == "all" ]; then
+  allows+="--allow-all"
+else
+  for (( i=0; i<${#1}; i++ )); do
+    case ${1: $i:1} in
+      e) allows+=("--allow-env");;
+      f) allows+=("--allow-ffi");;
+      h) allows+=("--allow-hrtime");;
+      n) allows+=("--allow-net");;
+      r) allows+=("--allow-read");;
+      w) allows+=("--allow-write");;
+      x) allows+=("--allow-run");;
+      *) echo "No permission for character ${1: $i:1}";;
+    esac
+  done
+fi
+
+deno run ${allows[*]} ${@: 2}

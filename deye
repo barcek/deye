@@ -1,28 +1,32 @@
 #!/bin/bash
 
-# deye v 1.0.1
+# deye v 1.0.2
 # ©2022 barcek
 # License: MIT
 # @ github.com
 # /barcek/deye
 
-allows=()
+flags=()
+
+append_flag() {
+  flags+=("--allow-${1}")
+}
 
 if [ $1 == "all" ]; then
-  allows+="--allow-all"
+  append_flag "all"
 else
   for (( i=0; i<${#1}; i++ )); do
     case ${1: $i:1} in
-      e) allows+=("--allow-env");;
-      f) allows+=("--allow-ffi");;
-      h) allows+=("--allow-hrtime");;
-      n) allows+=("--allow-net");;
-      r) allows+=("--allow-read");;
-      w) allows+=("--allow-write");;
-      x) allows+=("--allow-run");;
+      e) append_flag "env";;
+      f) append_flag "ffi";;
+      h) append_flag "hrtime";;
+      n) append_flag "net";;
+      r) append_flag "read";;
+      w) append_flag "write";;
+      x) append_flag "run";;
       *) echo "No permission for character ${1: $i:1}";;
     esac
   done
 fi
 
-deno run ${allows[*]} ${@: 2}
+deno run ${flags[*]} ${@: 2}

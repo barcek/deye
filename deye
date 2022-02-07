@@ -1,10 +1,17 @@
 #!/bin/bash
 
-# deye v 1.0.2
+# deye v 1.1.0
 # ©2022 barcek
 # License: MIT
 # @ github.com
 # /barcek/deye
+
+if [ "$1" == "--help" ] || [ "$1" == "-h" ] || [ -z "$1" ]; then
+  usage="Usage: deye e|f|h|n|r|w|x / all / --help/-h <remaining args>"
+  chars="Chars:\n e  --allow-env\n f  --allow-ffi\n h  --allow-hrtime\n n  --allow-net\n r  --allow-read\n w  --allow-write\n x  --allow-run"
+  echo -e "${usage}\n${chars}"
+  exit 1
+fi
 
 flags=()
 
@@ -12,11 +19,11 @@ append_flag() {
   flags+=("--allow-${1}")
 }
 
-if [ $1 == "all" ]; then
+if [ "$1" == "all" ]; then
   append_flag "all"
 else
   for (( i=0; i<${#1}; i++ )); do
-    case ${1: $i:1} in
+    case "${1: $i:1}" in
       e) append_flag "env";;
       f) append_flag "ffi";;
       h) append_flag "hrtime";;

@@ -41,3 +41,9 @@ deye all script.js
 The script can be run with the command `./deye` while in the same directory, and from elsewhere using the pattern `path/to/deye`. It can be run from any directory with `deye` by a) placing it in the '/bin' or '/usr/bin' directory and b) making it executable, if not already, with `chmod +x deye`.
 
 The hashbang at the top of the file assumes the presence of Bash, the `deno run` command that Deno itself is installed.
+
+## Options
+
+The following can be passed to `deye` in place of the permissions string:
+
+- `--help` / `-h`, for usage and a list of the characters available

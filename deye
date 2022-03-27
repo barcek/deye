@@ -1,36 +1,46 @@
 #!/bin/bash
 
-# deye v 1.1.0
+# deye v 1.2.0
 # ©2022 barcek
 # License: MIT
 # @ github.com
 # /barcek/deye
 
 if [ "$1" == "--help" ] || [ "$1" == "-h" ] || [ -z "$1" ]; then
-  usage="Usage: deye e|f|h|n|r|w|x / all / --help/-h <remaining args>"
-  chars="Chars:\n e  --allow-env\n f  --allow-ffi\n h  --allow-hrtime\n n  --allow-net\n r  --allow-read\n w  --allow-write\n x  --allow-run"
-  echo -e "${usage}\n${chars}"
+  usage="Usage: deye e|f|h|n|r|w|x|t|c|u|C|I / all / --help/-h <remaining args>"
+  chars="Chars:\n e   --allow-env\n f   --allow-ffi\n h   --allow-hrtime\n n   --allow-net\n r   --allow-read\n w   --allow-write\n x   --allow-run\n t   --no-prompt\n c   --compat\n u   --unstable\n C   --config deno.json\n I   --import-map=import_map.json"
+  words="Words:\n all --allow-all"
+  echo -e "${usage}\n${chars}\n${words}"
   exit 1
 fi
 
 flags=()
 
 append_flag() {
-  flags+=("--allow-${1}")
+  flags+=("--${1}")
+}
+
+append_flag_allow() {
+  append_flag "allow-${1}"
 }
 
 if [ "$1" == "all" ]; then
-  append_flag "all"
+  append_flag_allow "all"
 else
   for (( i=0; i<${#1}; i++ )); do
     case "${1: $i:1}" in
-      e) append_flag "env";;
-      f) append_flag "ffi";;
-      h) append_flag "hrtime";;
-      n) append_flag "net";;
-      r) append_flag "read";;
-      w) append_flag "write";;
-      x) append_flag "run";;
+      e) append_flag_allow "env";;
+      f) append_flag_allow "ffi";;
+      h) append_flag_allow "hrtime";;
+      n) append_flag_allow "net";;
+      r) append_flag_allow "read";;
+      w) append_flag_allow "write";;
+      x) append_flag_allow "run";;
+      t) append_flag "no-prompt";; # for 'throw'
+      c) append_flag "compat";;
+      u) append_flag "unstable";;
+      C) append_flag "config deno.json";;
+      I) append_flag "import-map=import_map.json";;
       *) echo "No permission for character ${1: $i:1}";;
     esac
   done

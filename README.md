@@ -2,7 +2,7 @@
 
 Pass permissions to `deno run` more easily.
 
-The `deye` command takes as its first argument a string representing the permissions required. The remaining arguments are the additional arguments usually passed directly to `deno run`.
+The `deye` command takes as its first argument a string representing the permissions or other options required. The remaining arguments are the additional arguments usually passed directly to `deno run`.
 
 ## Examples
 
@@ -24,6 +24,16 @@ For `--allow-all` use `all`:
 deye all script.js
 ```
 
+### Others
+
+The `--no-prompt`, `--compat`, `--unstable`, `--config` and `--import-map` options are also available:
+
+```shell
+deye tcuCI script.js
+```
+
+The default path for `--config` is deno.json, and for `--import-map` import_map.json, per the Deno docs.
+
 ## Mapping
 
 - `e` --allow-env
@@ -35,6 +45,12 @@ deye all script.js
 - `x` --allow-run
 
 - `all` --allow-all
+
+- `t` --no-prompt
+- `c` --compat
+- `u` --unstable
+- `C` --config deno.json
+- `I` --import-map=import_map.json
 
 ## Script
 

@@ -1,12 +1,15 @@
 #!/bin/bash
 
-# deye v 1.2.0
+# deye v 1.2.1
 # ©2022 barcek
 # License: MIT
 # @ github.com
 # /barcek/deye
 
+# handle help option or no arguments provided
+
 if [ "$1" == "--help" ] || [ "$1" == "-h" ] || [ -z "$1" ]; then
+  # show usage and option string lists then exit
   usage="Usage: deye e|f|h|n|r|w|x|t|c|u|C|I / all / --help/-h <remaining args>"
   chars="Chars:\n e   --allow-env\n f   --allow-ffi\n h   --allow-hrtime\n n   --allow-net\n r   --allow-read\n w   --allow-write\n x   --allow-run\n t   --no-prompt\n c   --compat\n u   --unstable\n C   --config deno.json\n I   --import-map=import_map.json"
   words="Words:\n all --allow-all"
@@ -14,7 +17,9 @@ if [ "$1" == "--help" ] || [ "$1" == "-h" ] || [ -z "$1" ]; then
   exit 1
 fi
 
-flags=()
+flags=() # passed to deno
+
+# define utility functions
 
 append_flag() {
   flags+=("--${1}")
@@ -23,6 +28,8 @@ append_flag() {
 append_flag_allow() {
   append_flag "allow-${1}"
 }
+
+# handle options string
 
 if [ "$1" == "all" ]; then
   append_flag_allow "all"
@@ -45,5 +52,7 @@ else
     esac
   done
 fi
+
+# pass relevant arguments
 
 deno run ${flags[*]} ${@: 2}

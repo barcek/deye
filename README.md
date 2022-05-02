@@ -54,7 +54,7 @@ The default path for `--config` is deno.json, and for `--import-map` import_map.
 
 ## Script
 
-The script can be run with the command `./deye` while in the same directory, and from elsewhere using the pattern `path/to/deye`. It can be run from any directory with `deye` by a) placing it in the '/bin' or '/usr/bin' directory and b) making it executable, if not already, with `chmod +x deye`.
+The script can be run with the command `./deye` while in the same directory, and from elsewhere using the pattern `path/to/deye`, by first making it executable, if not already, with `chmod +x deye`. Once executable, it can be run from any directory with the simpler `deye` by placing it in the '/bin' or '/usr/bin' directory.
 
 The hashbang at the top of the file assumes the presence of Bash, the `deno run` command that Deno itself is installed.
 

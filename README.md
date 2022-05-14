@@ -62,4 +62,4 @@ The hashbang at the top of the file assumes the presence of Bash, the `deno run`
 
 The following can be passed to `deye` in place of the permissions string:
 
-- `--help` / `-h`, for usage and a list of the characters available
+- `--help` / `-h`, to show usage and a list of the characters and words available then exit

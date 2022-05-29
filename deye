@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# deye v 1.2.2
+# deye v 1.3.0
 # ©2022 barcek
 # License: MIT
 # @ github.com
@@ -10,10 +10,17 @@
 
 if [ "$1" == "--help" ] || [ "$1" == "-h" ] || [ -z "$1" ]; then
   # show usage and option string lists then exit
-  usage="Usage: deye --help/-h / e|f|h|n|r|w|x|t|c|u|C|I / all <remaining args>"
+  usage="Usage: deye e|f|h|n|r|w|x|t|c|u|C|I / all <remaining args> / --help/-h / --version/-v"
   chars="Chars:\n e   --allow-env\n f   --allow-ffi\n h   --allow-hrtime\n n   --allow-net\n r   --allow-read\n w   --allow-write\n x   --allow-run\n t   --no-prompt\n c   --compat\n u   --unstable\n C   --config deno.json\n I   --import-map=import_map.json"
   words="Words:\n all --allow-all"
   echo -e "${usage}\n${chars}\n${words}"
+  exit 1
+
+elif [ "$1" == "--version" ] || [ "$1" == "-v" ]; then
+  # show name and version number then exit
+  cd "${0%/*}"
+  v=$(head -n 3 deye | tail -n 1)
+  echo ${v:2:12}
   exit 1
 fi
 

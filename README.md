@@ -60,7 +60,23 @@ The hashbang at the top of the file assumes the presence of Bash, the `deno run`
 
 ## Options
 
-The following can be passed to `deye` in place of the permissions string:
+The following can be passed to `deye` in place of the flag string:
 
 - `--help` / `-h`, to show usage and a list of the characters and words available then exit
 - `--version` / `-v`, to show name and version number then exit
+
+## Piping
+
+Arguments to `deye` can be piped from another process.
+
+These can be the additional arguments passed to `deno run`, with each set using the same flag string, e.g. filenames only:
+
+```shell
+ls | grep .js | deye rwx
+```
+
+Instead, the arguments piped can be both the flag string and the additional arguments to `deno run`, each as a single line:
+
+```shell
+cat cmds.txt | deye
+```

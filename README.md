@@ -24,7 +24,7 @@ For `--allow-all` use `all`:
 deye all script.js
 ```
 
-### Others
+### Other options
 
 The `--no-prompt`, `--compat`, `--unstable`, `--config` and `--import-map` options are also available:
 
@@ -36,6 +36,8 @@ The default path for `--config` is deno.json, and for `--import-map` import_map.
 
 ## Mapping
 
+### Permissions
+
 - `e` --allow-env
 - `f` --allow-ffi
 - `h` --allow-hrtime
@@ -45,6 +47,8 @@ The default path for `--config` is deno.json, and for `--import-map` import_map.
 - `x` --allow-run
 
 - `all` --allow-all
+
+### Other options
 
 - `t` --no-prompt
 - `c` --compat
@@ -78,5 +82,6 @@ ls | grep .js | deye rwx
 Instead, the arguments piped can be both the flag string and the additional arguments to `deno run`, each as a single line:
 
 ```shell
+echo -e "r read.js\nw write.js\nx run.js" > cmds.txt
 cat cmds.txt | deye
 ```

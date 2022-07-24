@@ -2,9 +2,19 @@
 
 Pass permissions to `deno run` more easily.
 
-The `deye` command takes as its first argument a string representing the permissions or other options required. The remaining arguments are the additional arguments usually passed directly to `deno run`.
+## Why?
 
-## Examples
+The permissions flags are multiple characters in length and a larger subset may be required to run a project. Including one or more in a given command can be relatively large overhead especially when prototyping, rapidly iterating or running occasional scripts.
+
+## How?
+
+The `deye` command takes as its first argument a string representing the set of permissions or other options required. The string is as short as one character per permission or option, or three characters ('all') for every available permission at once.
+
+For the full set of characters available, see [Mapping](#mapping) below.
+
+Additional arguments usually passed directly to `deno run`, e.g. the file path and any arguments to that file, are passed to `deye` immediately after the shorthand string.
+
+### Examples
 
 For the `--allow-read`, `--allow-write` and `--allow-run` flags the corresponding characters are `r`, `w` and `x`:
 
@@ -24,7 +34,7 @@ For `--allow-all` use `all`:
 deye all script.js
 ```
 
-### Other options
+#### Other options
 
 The `--no-prompt`, `--compat`, `--unstable`, `--config` and `--import-map` options are also available:
 
@@ -36,7 +46,7 @@ The default path for `--config` is deno.json, and for `--import-map` import_map.
 
 ## Mapping
 
-### Permissions
+### Permissions - individual
 
 - `e` --allow-env
 - `f` --allow-ffi
@@ -45,6 +55,8 @@ The default path for `--config` is deno.json, and for `--import-map` import_map.
 - `r` --allow-read
 - `w` --allow-write
 - `x` --allow-run
+
+### Permissions - combined
 
 - `all` --allow-all
 

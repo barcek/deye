@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# deye v 1.4.1
+# deye v 1.4.2
 # ©2022 barcek
 # License: MIT
 # @ github.com
@@ -79,7 +79,7 @@ extend_flags_to_pass() {
         fi
       done
       if [ false == $is_key ]; then
-        echo "No permission for character ${1: $i:1}"
+        echo "No permission or other option for character '${1: $i:1}'"
       fi
     done
   fi

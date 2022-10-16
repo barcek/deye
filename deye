@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# deye v 1.4.2
+# deye v 1.5.0
 # ©2022 barcek
 # License: MIT
 # @ github.com
@@ -15,6 +15,7 @@ declare -A flags=(
   [f]="--allow-ffi"
   [h]="--allow-hrtime"
   [n]="--allow-net"
+  [s]="--allow-sys"
   [r]="--allow-read"
   [w]="--allow-write"
   [x]="--allow-run"
@@ -34,12 +35,13 @@ handle_options() {
 
   if [ "$1" == "--help" ] || [ "$1" == "-h" ] || [ -z "$1" ]; then
     # show usage and flag string lists then exit
-    usage="Usage: deye e|f|h|n|r|w|x|t|c|u|C|I / all <remaining args> / --help/-h / --version/-v"
+    usage="Usage: deye e|f|h|n|s|r|w|x|t|c|u|C|I / all <remaining args> / --help/-h / --version/-v"
     chars="Chars:\
          \n e   ${flags[e]}\
          \n f   ${flags[f]}\
          \n h   ${flags[h]}\
          \n n   ${flags[n]}\
+         \n s   ${flags[s]}\
          \n r   ${flags[r]}\
          \n w   ${flags[w]}\
          \n x   ${flags[x]}\

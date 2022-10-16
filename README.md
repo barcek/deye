@@ -52,6 +52,7 @@ The default path for `--config` is deno.json, and for `--import-map` import_map.
 - `f` --allow-ffi
 - `h` --allow-hrtime
 - `n` --allow-net
+- `s` --allow-sys
 - `r` --allow-read
 - `w` --allow-write
 - `x` --allow-run
@@ -67,6 +68,8 @@ The default path for `--config` is deno.json, and for `--import-map` import_map.
 - `u` --unstable
 - `C` --config deno.json
 - `I` --import-map=import_map.json
+
+**NB** Permission flags as at Deno v1.26, which introduced `--allow-sys`. Retained for backward compatibility: `--compat` (mode removed in v1.25.2).
 
 ## Script
 

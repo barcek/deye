@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# deye v 1.5.0
+# deye v 1.5.1
 # ©2022 barcek
 # License: MIT
 # @ github.com
@@ -9,25 +9,35 @@
 
 # initialize arrays
 
-# map flags to characters and words
-declare -A flags=(
-  [e]="--allow-env"
-  [f]="--allow-ffi"
-  [h]="--allow-hrtime"
-  [n]="--allow-net"
-  [s]="--allow-sys"
-  [r]="--allow-read"
-  [w]="--allow-write"
-  [x]="--allow-run"
-  [all]="--allow-all"
-  [t]="--no-prompt" # for 'throw'
-  [c]="--compat"
-  [u]="--unstable"
-  [C]="--config deno.json"
-  [I]="--import-map=import_map.json"
+# map flags to characters and word
+opts_char=(
+"e --allow-env"
+"f --allow-ffi"
+"h --allow-hrtime"
+"n --allow-net"
+"s --allow-sys"
+"r --allow-read"
+"w --allow-write"
+"x --allow-run"
+"t --no-prompt" # for 'throw'
+"c --compat"
+"u --unstable"
+"C --config deno.json"
+"I --import-map=import_map.json"
 )
+opt_word="all --allow-all"
 
 flags_to_pass=()
+
+# transform options
+
+opts_char_chars=$(for ((i=0; i<${#opts_char[@]}; i++)); do echo ${opts_char[$i]} | awk '{print $1}'; done)
+opts_char_lines=$(for ((i=0; i<${#opts_char[@]}; i++)); do echo -e ${opts_char[$i]} | awk '{print $0"\\n"}'; done)
+
+opts_char_chars_list=$(echo $opts_char_chars | sed 's/ /|/g')
+opts_char_lines_list=$(echo $opts_char_lines | sed -E 's/(\\n)\s([^-])/\1\2/g' | sed -E 's/\s(-)/   \1/g' | sed -E 's/\\n$//' | sed -E 's/\\n/\n /g')
+
+opt_word_word=$(echo $opt_word | awk '{print $1}')
 
 # define primary functions
 
@@ -35,23 +45,9 @@ handle_options() {
 
   if [ "$1" == "--help" ] || [ "$1" == "-h" ] || [ -z "$1" ]; then
     # show usage and flag string lists then exit
-    usage="Usage: deye e|f|h|n|s|r|w|x|t|c|u|C|I / all <remaining args> / --help/-h / --version/-v"
-    chars="Chars:\
-         \n e   ${flags[e]}\
-         \n f   ${flags[f]}\
-         \n h   ${flags[h]}\
-         \n n   ${flags[n]}\
-         \n s   ${flags[s]}\
-         \n r   ${flags[r]}\
-         \n w   ${flags[w]}\
-         \n x   ${flags[x]}\
-         \n t   ${flags[t]}\
-         \n c   ${flags[c]}\
-         \n u   ${flags[u]}\
-         \n C   ${flags[C]}\
-         \n I   ${flags[I]}"
-    words="Words:\
-         \n all ${flags[all]}"
+    usage="Usage: deye $opts_char_chars_list / $opt_word_word <remaining args> / --help/-h / --version/-v"
+    chars="Chars:\n $opts_char_lines_list"
+    words="Words:\n $opt_word"
     echo -e "${usage}\n${chars}\n${words}"
     exit 1
 
@@ -66,16 +62,19 @@ handle_options() {
 
 extend_flags_to_pass() {
 
-  if [ "$1" == "all" ]; then
-    flags_to_pass+=("${flags[all]}")
+  if [ "$1" == $opt_word_word ]; then
+    flag=$(echo $opt_word | awk '{$1=""; print $0}')
+    flags_to_pass+=($flag)
 
   else # handle individual characters
 
     for (( i=0; i<${#1}; i++ )); do
-      for key in ${!flags[*]}; do
+      for (( j=0; j<${#opts_char[*]}; j++)); do
         is_key=false
-        if [ "${1: $i:1}" == "$key" ]; then
-          flags_to_pass+=("${flags[$key]}")
+        char=$(echo ${opts_char[$j]} | awk '{print $1}')
+        if [ "${1: $i:1}" == $char ]; then
+          flag=$(echo ${opts_char[$j]} | awk '{$1=""; print $0}')
+          flags_to_pass+=($flag)
           is_key=true
           break
         fi

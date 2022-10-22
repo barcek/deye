@@ -8,7 +8,7 @@ The permissions flags are multiple characters in length and a larger subset may 
 
 ## How?
 
-The `deye` command takes as its first argument a string representing the set of permissions or other options required. The string is as short as one character per permission or option, or three characters ('all') for every available permission at once.
+The `deye` command takes as its first argument a string representing the set of permissions or other options required. The string has one character per single permission or other option, or three characters ('all') for every permission at once.
 
 For the full set of characters available, see [Mapping](#mapping) below.
 
@@ -86,15 +86,15 @@ The following can be passed to `deye` in place of the flag string:
 
 ## Piping
 
-Arguments to `deye` can be piped from another process.
+Sets of arguments can be piped to `deye` from another process, with each complete argument set occupying a single line and each line being handled individually.
 
-These can be the additional arguments passed to `deno run`, with each set using the same flag string, e.g. filenames only:
+If a batch of lines consists only of the additional arguments passed to `deno run`, the same flag string is used for all:
 
 ```shell
 ls | grep .js | deye rwx
 ```
 
-Instead, the arguments piped can be both the flag string and the additional arguments to `deno run`, each as a single line:
+Alternatively, each line in a batch can include its own flag string:
 
 ```shell
 echo -e "r read.js\nw write.js\nx run.js" > cmds.txt

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# deye v 1.5.2
+# deye v 1.6.0
 # ©2022 barcek
 # License: MIT
 # @ github.com
@@ -31,15 +31,20 @@ flags_to_pass=()
 
 # transform options
 
-opts_char_chars=$(for ((i=0; i<${#opts_char[@]}; i++)); do echo ${opts_char[$i]} | awk '{print $1}'; done)
-opts_char_lines=$(for ((i=0; i<${#opts_char[@]}; i++)); do echo -e ${opts_char[$i]} | awk '{print $0"\\n"}'; done)
+opts_char_chars=$(for ((i=0; i<${#opts_char[@]}; i++)); do echo "${opts_char[$i]}" | awk '{print $1}'; done)
+opts_char_lines=$(for ((i=0; i<${#opts_char[@]}; i++)); do echo -e "${opts_char[$i]}" | awk '{print $0"\\n"}'; done)
 
 opts_char_chars_list=$(echo $opts_char_chars | sed 's/ /|/g')
 opts_char_lines_list=$(echo $opts_char_lines | sed -E 's/(\\n)\s([^-])/\1\2/g' | sed -E 's/\s(-)/   \1/g' | sed -E 's/\\n$//' | sed -E 's/\\n/\n /g')
 
-opt_word_word=$(echo $opt_word | awk '{print $1}')
+opt_word_word=$(echo "$opt_word" | awk '{print $1}')
 
 # define primary functions
+
+handle_failure() {
+  echo "$1"
+  exit 1
+}
 
 handle_options() {
 
@@ -53,28 +58,28 @@ handle_options() {
 
   elif [ "$1" == "--version" ] || [ "$1" == "-v" ]; then
     # show name and version number then exit
-    cd "${0%/*}"
+    cd "${0%/*}" || handle_failure "Unable to handle option for flag '$1'"
     v=$(head -n 3 deye | tail -n 1)
-    echo ${v:2:12}
+    echo "${v:2:12}"
     exit 0
   fi
 }
 
 extend_flags_to_pass() {
 
-  if [ "$1" == $opt_word_word ]; then
-    flag=$(echo $opt_word | awk '{$1=""; print $0}')
-    flags_to_pass+=($flag)
+  if [ "$1" == "$opt_word_word" ]; then
+    flag=$(echo "$opt_word" | awk '{$1=""; print $0}')
+    flags_to_pass+=("$flag")
 
   else # handle individual characters
 
     for (( i=0; i<${#1}; i++ )); do
       for (( j=0; j<${#opts_char[*]}; j++)); do
         is_key=false
-        char=$(echo ${opts_char[$j]} | awk '{print $1}')
-        if [ "${1: $i:1}" == $char ]; then
-          flag=$(echo ${opts_char[$j]} | awk '{$1=""; print $0}')
-          flags_to_pass+=($flag)
+        char=$(echo "${opts_char[$j]}" | awk '{print $1}')
+        if [ "${1: $i:1}" == "$char" ]; then
+          flag=$(echo "${opts_char[$j]}" | awk '{$1=""; print $0}')
+          flags_to_pass+=("$flag")
           is_key=true
           break
         fi
@@ -87,7 +92,7 @@ extend_flags_to_pass() {
 }
 
 pass_to_deno() {
-  deno run ${@}
+  deno run "${@}"
 }
 
 # handle arguments to deye
@@ -95,7 +100,7 @@ pass_to_deno() {
 if [ "${#}" -eq 0 ]; then # assume all arguments piped, or none passed
 
   while read -r -t 0.1 line; do
-    items=($(echo $line | tr " " "\n"))
+    items=($(echo "$line" | tr " " "\n"))
     extend_flags_to_pass ${items[@]: 0}
     filename_plus=${items[@]: 1}
     pass_to_deno ${flags_to_pass[*]} $filename_plus
@@ -109,20 +114,20 @@ if [ "${#}" -eq 0 ]; then # assume all arguments piped, or none passed
 
 elif [ "${#}" -eq 1 ]; then # assume flag string passed directly and file argument(s) piped
 
-  handle_options ${@}
+  handle_options "${@}"
 
   while read -r line; do
-    extend_flags_to_pass $1
-    filename_plus=$line
+    extend_flags_to_pass "${@}"
+    filename_plus="$line"
     pass_to_deno ${flags_to_pass[*]} $filename_plus
     unset flags_to_pass
   done
 
 else # assume all arguments passed directly
 
-  handle_options ${@}
+  handle_options "${@}"
 
-  extend_flags_to_pass ${@}
-  filename_plus=${@: 2}
+  extend_flags_to_pass "${@}"
+  filename_plus="${@: 2}"
   pass_to_deno ${flags_to_pass[*]} $filename_plus
 fi

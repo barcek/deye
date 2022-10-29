@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# deye v 1.5.1
+# deye v 1.5.2
 # ©2022 barcek
 # License: MIT
 # @ github.com
@@ -49,14 +49,14 @@ handle_options() {
     chars="Chars:\n $opts_char_lines_list"
     words="Words:\n $opt_word"
     echo -e "${usage}\n${chars}\n${words}"
-    exit 1
+    exit 0
 
   elif [ "$1" == "--version" ] || [ "$1" == "-v" ]; then
     # show name and version number then exit
     cd "${0%/*}"
     v=$(head -n 3 deye | tail -n 1)
     echo ${v:2:12}
-    exit 1
+    exit 0
   fi
 }
 

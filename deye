@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# deye v 1.6.0
+# deye v 1.6.1
 # ©2022 barcek
 # License: MIT
 # @ github.com
@@ -42,7 +42,7 @@ opt_word_word=$(echo "$opt_word" | awk '{print $1}')
 # define primary functions
 
 handle_failure() {
-  echo "$1"
+  echo "$1" >&2
   exit 1
 }
 

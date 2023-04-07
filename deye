@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# deye v 1.6.1
+# deye v 1.7.0
 # ©2022 barcek
 # License: MIT
 # @ github.com
@@ -28,6 +28,7 @@ opts_char=(
 opt_word="all --allow-all"
 
 flags_to_pass=()
+flags_to_fail=()
 
 # transform options
 
@@ -85,9 +86,23 @@ extend_flags_to_pass() {
         fi
       done
       if [ false == $is_key ]; then
-        echo "No permission or other option for character '${1: $i:1}'"
+        flags_to_fail+=("'${1: $i:1}'")
       fi
     done
+  fi
+}
+
+unless_flags_to_fail() {
+
+  flags_to_fail_n=${#flags_to_fail[@]}
+
+  if (( $flags_to_fail_n > 0 )); then
+    base="No permission or other option for character"
+    case $flags_to_fail_n in
+      1) handle_failure "$base $flags_to_fail";;
+      2) handle_failure "$base ${flags_to_fail[0]} or ${flags_to_fail[1]}";;
+      *) handle_failure "$base $(echo ${flags_to_fail[@]: 0:${#flags_to_fail[@]}-1} | sed 's/ /, /g') or ${flags_to_fail[${#flags_to_fail[@]}-1]}";;
+    esac
   fi
 }
 
@@ -102,6 +117,7 @@ if [ "${#}" -eq 0 ]; then # assume all arguments piped, or none passed
   while read -r -t 0.1 line; do
     items=($(echo "$line" | tr " " "\n"))
     extend_flags_to_pass ${items[@]: 0}
+    unless_flags_to_fail
     filename_plus=${items[@]: 1}
     pass_to_deno ${flags_to_pass[*]} $filename_plus
     unset flags_to_pass
@@ -118,6 +134,7 @@ elif [ "${#}" -eq 1 ]; then # assume flag string passed directly and file argume
 
   while read -r line; do
     extend_flags_to_pass "${@}"
+    unless_flags_to_fail
     filename_plus="$line"
     pass_to_deno ${flags_to_pass[*]} $filename_plus
     unset flags_to_pass
@@ -128,6 +145,7 @@ else # assume all arguments passed directly
   handle_options "${@}"
 
   extend_flags_to_pass "${@}"
+  unless_flags_to_fail
   filename_plus="${@: 2}"
   pass_to_deno ${flags_to_pass[*]} $filename_plus
 fi

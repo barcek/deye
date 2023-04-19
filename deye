@@ -1,15 +1,17 @@
 #!/bin/bash
 
-# deye v 1.7.0
+# deye v 1.7.1
 # ©2022 barcek
 # License: MIT
 # @ github.com
 # /barcek/deye
 
+# accepts a set of characters (cf. $opts_char) or a word (-word)
+# as a shorthand for deno run options, plus any other arguments,
+# via stdin and/or as args and passes w/ full flags to deno run
 
-# initialize arrays
+# map flags to option string constituents
 
-# map flags to characters and word
 opts_char=(
 "e --allow-env"
 "f --allow-ffi"
@@ -27,10 +29,7 @@ opts_char=(
 )
 opt_word="all --allow-all"
 
-flags_to_pass=()
-flags_to_fail=()
-
-# transform options
+# transform flag-string mappings to lists
 
 opts_char_chars=$(for ((i=0; i<${#opts_char[@]}; i++)); do echo "${opts_char[$i]}" | awk '{print $1}'; done)
 opts_char_lines=$(for ((i=0; i<${#opts_char[@]}; i++)); do echo -e "${opts_char[$i]}" | awk '{print $0"\\n"}'; done)
@@ -39,6 +38,11 @@ opts_char_chars_list=$(echo $opts_char_chars | sed 's/ /|/g')
 opts_char_lines_list=$(echo $opts_char_lines | sed -E 's/(\\n)\s([^-])/\1\2/g' | sed -E 's/\s(-)/   \1/g' | sed -E 's/\\n$//' | sed -E 's/\\n/\n /g')
 
 opt_word_word=$(echo "$opt_word" | awk '{print $1}')
+
+# declare flag accumulators
+
+flags_to_pass=()
+flags_to_fail=()
 
 # define primary functions
 
@@ -50,7 +54,7 @@ handle_failure() {
 handle_options() {
 
   if [ "$1" == "--help" ] || [ "$1" == "-h" ] || [ -z "$1" ]; then
-    # show usage and flag string lists then exit
+    # show usage and option string lists then exit
     usage="Usage: deye $opts_char_chars_list / $opt_word_word <remaining args> / --help/-h / --version/-v"
     chars="Chars:\n $opts_char_lines_list"
     words="Words:\n $opt_word"
@@ -110,9 +114,9 @@ pass_to_deno() {
   deno run "${@}"
 }
 
-# handle arguments to deye
+# transform input and pass on
 
-if [ "${#}" -eq 0 ]; then # assume all arguments piped, or none passed
+if [ "${#}" -eq 0 ]; then # assume all arguments passed via stdin, or none passed
 
   while read -r -t 0.1 line; do
     items=($(echo "$line" | tr " " "\n"))
@@ -128,7 +132,7 @@ if [ "${#}" -eq 0 ]; then # assume all arguments piped, or none passed
     handle_options
   fi
 
-elif [ "${#}" -eq 1 ]; then # assume flag string passed directly and file argument(s) piped
+elif [ "${#}" -eq 1 ]; then # assume option string passed as arg, remainder via stdin
 
   handle_options "${@}"
 
@@ -140,7 +144,7 @@ elif [ "${#}" -eq 1 ]; then # assume flag string passed directly and file argume
     unset flags_to_pass
   done
 
-else # assume all arguments passed directly
+else # assume all arguments passed as args
 
   handle_options "${@}"
 

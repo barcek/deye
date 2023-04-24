@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# deye v 1.7.1
+# deye v 1.7.3
 # ©2022 barcek
 # License: MIT
 # @ github.com
@@ -31,11 +31,14 @@ opt_word="all --allow-all"
 
 # transform flag-string mappings to lists
 
-opts_char_chars=$(for ((i=0; i<${#opts_char[@]}; i++)); do echo "${opts_char[$i]}" | awk '{print $1}'; done)
+opts_char_chars=$(for ((i=0; i<${#opts_char[@]}; i++)); do echo    "${opts_char[$i]}" | awk '{print $1}';      done)
 opts_char_lines=$(for ((i=0; i<${#opts_char[@]}; i++)); do echo -e "${opts_char[$i]}" | awk '{print $0"\\n"}'; done)
 
 opts_char_chars_list=$(echo $opts_char_chars | sed 's/ /|/g')
-opts_char_lines_list=$(echo $opts_char_lines | sed -E 's/(\\n)\s([^-])/\1\2/g' | sed -E 's/\s(-)/   \1/g' | sed -E 's/\\n$//' | sed -E 's/\\n/\n /g')
+opts_char_lines_list=$(echo $opts_char_lines | sed -E 's/(\\n)\s([^-])/\1\2/g'\
+                                             | sed -E 's/\s(-)/   \1/g'\
+                                             | sed -E 's/\\n$//'\
+                                             | sed -E 's/\\n/\n /g')
 
 opt_word_word=$(echo "$opt_word" | awk '{print $1}')
 
@@ -47,7 +50,7 @@ flags_to_fail=()
 # define primary functions
 
 handle_failure() {
-  echo "$1" >&2
+  echo "${@}" >&2
   exit 1
 }
 
@@ -105,7 +108,8 @@ unless_flags_to_fail() {
     case $flags_to_fail_n in
       1) handle_failure "$base $flags_to_fail";;
       2) handle_failure "$base ${flags_to_fail[0]} or ${flags_to_fail[1]}";;
-      *) handle_failure "$base $(echo ${flags_to_fail[@]: 0:${#flags_to_fail[@]}-1} | sed 's/ /, /g') or ${flags_to_fail[${#flags_to_fail[@]}-1]}";;
+      *) handle_failure "$base $(echo ${flags_to_fail[@]: 0:${#flags_to_fail[@]}-1} | sed 's/ /, /g')"\
+                        "or ${flags_to_fail[${#flags_to_fail[@]}-1]}";;
     esac
   fi
 }

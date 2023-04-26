@@ -4,15 +4,19 @@ Pass permissions to `deno run` more easily.
 
 ## Why?
 
-The permissions flags are multiple characters in length and a larger subset may be required to run a project. Including one or more in a given command can be relatively large overhead especially when prototyping, rapidly iterating or running occasional scripts.
+The permissions flags are multiple characters in length and several may be required to run a project. Including one or more in a given command can be relatively large overhead especially when prototyping, rapidly iterating or running occasional scripts.
 
 ## How?
 
-The `deye` command takes as its first argument a string representing the set of permissions or other options required. The string has one character per single permission or other option, or three characters ('all') for every permission at once.
+The `deye` command takes as its first argument a string of characters - the option string - representing the set of permissions or other options required. The string has one character per permission or other option (e.g. `r` to allow read), or is three characters long - `all` - to apply every permission at once.
 
-For the full set of characters available, see [Mapping](#mapping) below.
+Additional arguments usually passed directly to `deno run`, e.g. the file path and any arguments to that file, are passed to `deye` immediately after the option string.
 
-Additional arguments usually passed directly to `deno run`, e.g. the file path and any arguments to that file, are passed to `deye` immediately after the shorthand string.
+```shell
+deye <option_string> [<additional_arg>[ ...]]
+```
+
+For the full set of option string characters available, see [Mapping](#mapping) below.
 
 ### Examples
 
@@ -73,13 +77,13 @@ The default path for `--config` is deno.json, and for `--import-map` import_map.
 
 ## Script
 
-The script can be run with the command `./deye` while in the same directory, and from elsewhere using the pattern `path/to/deye`, by first making it executable, if not already, with `chmod +x deye`. Once executable, it can be run from any directory with the simpler `deye` by placing it in the '/bin' or '/usr/bin' directory.
+The script can be run with the command `./deye` while in the same directory, and from elsewhere using the pattern `path/to/deye`, by first making it executable, if not already, with `chmod +x deye`. Once executable, it can be run from any directory with the simpler `deye` by placing it in a directory listed on the `$PATH` environment variable, e.g. '/bin' or '/usr/bin'.
 
-The hashbang at the top of the file assumes the presence of Bash, the `deno run` command that Deno itself is installed.
+The hashbang at the top of the file assumes the presence of Bash in '/bin', the `deno run` command that Deno itself is installed.
 
 ## Options
 
-The following can be passed to `deye` in place of the flag string:
+The following can be passed to `deye` in place of the option string:
 
 - `--help` / `-h`, to show usage and a list of the characters and words available then exit
 - `--version` / `-v`, to show name and version number then exit
@@ -88,13 +92,13 @@ The following can be passed to `deye` in place of the flag string:
 
 Sets of arguments can be piped to `deye` from another process, with each complete argument set occupying a single line and each line being handled individually.
 
-If a batch of lines consists only of the additional arguments passed to `deno run`, the same flag string is used for all:
+If a batch of lines consists only of the additional arguments passed to `deno run`, the same option string is used for all:
 
 ```shell
 ls | grep .js | deye rwx
 ```
 
-Alternatively, each line in a batch can include its own flag string:
+Alternatively, each line in a batch can include its own option string:
 
 ```shell
 echo -e "r read.js\nw write.js\nx run.js" > cmds.txt

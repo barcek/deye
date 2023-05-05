@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# deye v 1.7.3
+# deye v 1.8.0
 # ©2022 barcek
 # License: MIT
 # @ github.com
@@ -26,6 +26,8 @@ opts_char=(
 "u --unstable"
 "C --config deno.json"
 "I --import-map=import_map.json"
+"T --check"     # for 'types'
+"W --watch"
 )
 opt_word="all --allow-all"
 

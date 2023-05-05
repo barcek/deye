@@ -40,10 +40,10 @@ deye all script.js
 
 #### Other options
 
-The `--no-prompt`, `--compat`, `--unstable`, `--config` and `--import-map` options are also available:
+The `--no-prompt`, `--compat`, `--unstable`, `--config`, `--import-map`, `--check` and `--watch` options are also available:
 
 ```shell
-deye tcuCI script.js
+deye tcuCITW script.js
 ```
 
 The default path for `--config` is deno.json, and for `--import-map` import_map.json, per the Deno docs.
@@ -67,13 +67,15 @@ The default path for `--config` is deno.json, and for `--import-map` import_map.
 
 ### Other options
 
-- `t` --no-prompt
+- `t` --no-prompt ('throw')
 - `c` --compat
 - `u` --unstable
 - `C` --config deno.json
 - `I` --import-map=import_map.json
+- `T` --check ('types')
+- `W` --watch
 
-**NB** Permission flags as at Deno v1.26, which introduced `--allow-sys`. Retained for backward compatibility: `--compat` (mode removed in v1.25.2).
+**NB** Permission flag `--allow-sys` introduced in Deno v1.26.0. Retained for backward compatibility: `--compat` (mode removed in Deno v1.25.2).
 
 ## Script
 

@@ -1,12 +1,14 @@
 #!/bin/bash
 
-# deye v 1.8.0
+# deye v 1.8.1
 # ©2022 barcek
 # License: MIT
 # @ github.com
 # /barcek/deye
 
-# accepts a set of characters (cf. $opts_char) or a word (-word)
+# Assumes the use of Bash and the presence of AWK (Gawk), Deno, head, sed, tail and tr
+
+# Accepts a set of characters (cf. $opts_char) or a word (-word)
 # as a shorthand for deno run options, plus any other arguments,
 # via stdin and/or as args and passes w/ full flags to deno run
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# deye v 1.8.1
+# deye v 1.8.2
 # ©2022 barcek
 # License: MIT
 # @ github.com
@@ -12,7 +12,7 @@
 # as a shorthand for deno run options, plus any other arguments,
 # via stdin and/or as args and passes w/ full flags to deno run
 
-# map flags to option string constituents
+# map flags to shorthand string constituents
 
 opts_char=(
 "e --allow-env"
@@ -46,22 +46,19 @@ opts_char_lines_list=$(echo $opts_char_lines | sed -E 's/(\\n)\s([^-])/\1\2/g'\
 
 opt_word_word=$(echo "$opt_word" | awk '{print $1}')
 
-# declare flag accumulators
-
-flags_to_pass=()
-flags_to_fail=()
-
-# define primary functions
+# define utility functions
 
 handle_failure() {
   echo "${@}" >&2
   exit 1
 }
 
+# define primary functions
+
 handle_options() {
 
   if [ "$1" == "--help" ] || [ "$1" == "-h" ] || [ -z "$1" ]; then
-    # show usage and option string lists then exit
+    # show usage and shorthand lists then exit
     usage="Usage: deye $opts_char_chars_list / $opt_word_word <remaining args> / --help/-h / --version/-v"
     chars="Chars:\n $opts_char_lines_list"
     words="Words:\n $opt_word"
@@ -77,14 +74,34 @@ handle_options() {
   fi
 }
 
-extend_flags_to_pass() {
+handle_unknown() {
 
+  flags_unknown_n=${#1}
+
+  if (( $flags_unknown_n > 0 )); then
+    base="No permission or other option for character"
+    case $flags_unknown_n in
+      1) handle_failure "$base $flags_unknown";;
+      2) handle_failure "$base ${flags_unknown[0]} or ${flags_unknown[1]}";;
+      *) handle_failure "$base $(echo ${flags_unknown[@]: 0:${#flags_unknown[@]}-1} | sed 's/ /, /g')"\
+                        "or ${flags_unknown[${#flags_unknown[@]}-1]}";;
+    esac
+  fi
+}
+
+get_flags_to_pass() {
+
+  # declare flag accumulators
+  flags_to_pass=()
+  flags_unknown=()
+
+  # accumulate for parameter no .1
   if [ "$1" == "$opt_word_word" ]; then
+    # handle as specific full word
     flag=$(echo "$opt_word" | awk '{$1=""; print $0}')
     flags_to_pass+=("$flag")
-
-  else # handle individual characters
-
+  else
+    # handle individual characters
     for (( i=0; i<${#1}; i++ )); do
       for (( j=0; j<${#opts_char[*]}; j++)); do
         is_key=false
@@ -97,69 +114,69 @@ extend_flags_to_pass() {
         fi
       done
       if [ false == $is_key ]; then
-        flags_to_fail+=("'${1: $i:1}'")
+        flags_unknown+=("'${1: $i:1}'")
       fi
     done
   fi
+
+  # use flags accumulated
+  handle_unknown "${flags_unknown[*]}"
+  echo "${flags_to_pass[*]}"
 }
 
-unless_flags_to_fail() {
+get_pass_to_deno() {
 
-  flags_to_fail_n=${#flags_to_fail[@]}
+  # allow for nested exit
+  set -e
 
-  if (( $flags_to_fail_n > 0 )); then
-    base="No permission or other option for character"
-    case $flags_to_fail_n in
-      1) handle_failure "$base $flags_to_fail";;
-      2) handle_failure "$base ${flags_to_fail[0]} or ${flags_to_fail[1]}";;
-      *) handle_failure "$base $(echo ${flags_to_fail[@]: 0:${#flags_to_fail[@]}-1} | sed 's/ /, /g')"\
-                        "or ${flags_to_fail[${#flags_to_fail[@]}-1]}";;
-    esac
-  fi
+  # assign argument sets
+  flags_to_pass="$(get_flags_to_pass $1)"
+  all_remaining="${@: 2}"
+
+  # return full command
+  echo "deno run $flags_to_pass $all_remaining"
 }
 
-process_string() {
-  extend_flags_to_pass "$1"
-  unless_flags_to_fail
-}
-
-pass_to_deno() {
-  deno run "${@}"
-}
-
-# transform input and pass on
+# initiate, generating and running each command
 
 if [ "${#}" -eq 0 ]; then # assume all arguments passed via stdin, or none passed
 
   while read -r -t 0.1 line; do
+
     items=($(echo "$line" | tr " " "\n"))
-    process_string "${items[@]: 0}"
-    remaining_args="${items[@]: 1}"
-    pass_to_deno ${flags_to_pass[*]} $remaining_args
-    unset flags_to_pass
+
+    shorthand_str="${items[@]: 0:1}"
+    all_remaining="${items[@]: 1}"
+
+    pass_to_deno="$(get_pass_to_deno $shorthand_str $all_remaining)"
+    bash -c "$pass_to_deno"
   done
 
   # if insufficient passed, show help text
-  if [ -z "$remaining_args" ]; then
+  if [ -z "$all_remaining" ]; then
     handle_options
   fi
 
-elif [ "${#}" -eq 1 ]; then # assume option string passed as arg, remainder via stdin
+elif [ "${#}" -eq 1 ]; then # assume shorthand string passed as arg, remainder via stdin
 
   handle_options "${@}"
 
   while read -r line; do
-    process_string "${@}"
-    remaining_args="$line"
-    pass_to_deno ${flags_to_pass[*]} $remaining_args
-    unset flags_to_pass
+
+    shorthand_str="${@}"
+    all_remaining="$line"
+
+    pass_to_deno="$(get_pass_to_deno $shorthand_str $all_remaining)"
+    bash -c "$pass_to_deno"
   done
 
 else # assume all arguments passed as args
 
   handle_options "${@}"
 
-  process_string "${@}"
-  remaining_args="${@: 2}"
-  pass_to_deno ${flags_to_pass[*]} $remaining_args
+  shorthand_str="${@: 1:1}"
+  all_remaining="${@: 2}"
+
+  pass_to_deno="$(get_pass_to_deno $shorthand_str $all_remaining)"
+  bash -c "$pass_to_deno"
 fi

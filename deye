@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# deye v 1.8.2
+# deye v 1.9.0
 # ©2022 barcek
 # License: MIT
 # @ github.com
@@ -55,11 +55,11 @@ handle_failure() {
 
 # define primary functions
 
-handle_options() {
+handle_options_main() {
 
   if [ "$1" == "--help" ] || [ "$1" == "-h" ] || [ -z "$1" ]; then
     # show usage and shorthand lists then exit
-    usage="Usage: deye $opts_char_chars_list / $opt_word_word <remaining args> / --help/-h / --version/-v"
+    usage="Usage: deye [--preview/-p] $opts_char_chars_list / $opt_word_word <remaining args> / --version/-v / --help/-h"
     chars="Chars:\n $opts_char_lines_list"
     words="Words:\n $opt_word"
     echo -e "${usage}\n${chars}\n${words}"
@@ -145,21 +145,37 @@ if [ "${#}" -eq 0 ]; then # assume all arguments passed via stdin, or none passe
 
     items=($(echo "$line" | tr " " "\n"))
 
-    shorthand_str="${items[@]: 0:1}"
-    all_remaining="${items[@]: 1}"
+    # handle option - preview
+    if [ "${items[@]: 0:1}" == "--preview" ] || [ "${items[@]: 0:1}" == "-p" ]; then
+      preview=true
+      shorthand_str="${items[@]: 1:1}"
+      all_remaining="${items[@]: 2}"
+    else
+      shorthand_str="${items[@]: 0:1}"
+      all_remaining="${items[@]: 1}"
+    fi
 
     pass_to_deno="$(get_pass_to_deno $shorthand_str $all_remaining)"
+    if [[ true == $preview ]]; then echo $pass_to_deno; continue; fi
     bash -c "$pass_to_deno"
   done
 
   # if insufficient passed, show help text
   if [ -z "$all_remaining" ]; then
-    handle_options
+    handle_options_main
   fi
 
-elif [ "${#}" -eq 1 ]; then # assume shorthand string passed as arg, remainder via stdin
+elif [ "${#}" -eq 1 ] ||\
+   ( [ "${#}" -eq 2 ] && ( [ "$1" == "--preview" ] || [ "$1" == "-p" ] ) )
+  then # assume shorthand string passed as arg, remainder via stdin
 
-  handle_options "${@}"
+  handle_options_main "${@}"
+
+  # handle option - preview
+  if [ "$1" == "--preview" ] || [ "$1" == "-p" ]; then
+    preview=true
+    shift
+  fi
 
   while read -r line; do
 
@@ -167,16 +183,24 @@ elif [ "${#}" -eq 1 ]; then # assume shorthand string passed as arg, remainder v
     all_remaining="$line"
 
     pass_to_deno="$(get_pass_to_deno $shorthand_str $all_remaining)"
+    if [[ true == $preview ]]; then echo $pass_to_deno; continue; fi
     bash -c "$pass_to_deno"
   done
 
 else # assume all arguments passed as args
 
-  handle_options "${@}"
+  handle_options_main "${@}"
+
+  # handle option - preview
+  if [ "$1" == "--preview" ] || [ "$1" == "-p" ]; then
+    preview=true
+    shift
+  fi
 
   shorthand_str="${@: 1:1}"
   all_remaining="${@: 2}"
 
   pass_to_deno="$(get_pass_to_deno $shorthand_str $all_remaining)"
+  if [[ true == $preview ]]; then echo $pass_to_deno; exit 0; fi
   bash -c "$pass_to_deno"
 fi

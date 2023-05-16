@@ -85,6 +85,10 @@ The script can be run with the command `./deye` while in the same directory, and
 
 The hashbang at the top of the file assumes the presence of Bash in '/bin', the source code that several utils and Deno itself are installed. A list can be found close to the top of the file.
 
+### Making changes
+
+Running the self-test after making changes plus extending or adding test cases to cover new behaviour is recommended. The self-test is run with the `--test` or `-T` flag (see [Options](#options) below). The test cases are set in the `perform_self_test` function, which is the first primary function defined.
+
 ## Options
 
 The following can be passed to `deye` before the shorthand string:
@@ -95,6 +99,7 @@ The following can be passed to `deye` in place of the shorthand string:
 
 - `--version` / `-v`, to show name and version number then exit
 - `--help` / `-h`, to show usage and a list of the characters and words available then exit
+- `--test` / `-T`, to perform the self-test then exit
 
 ## Piping
 

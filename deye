@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# deye v1.10.0
+# deye v1.10.1
 # ©2022 barcek
 # License: MIT
 # @ github.com
@@ -94,9 +94,8 @@ handle_options_main() {
 
   elif [ "$1" == "--version" ] || [ "$1" == "-v" ]; then
     # show name and version number then exit
-    cd "${0%/*}" || handle_failure "Unable to handle option for flag '$1'"
-    v=$(head -n 3 deye | tail -n 1)
-    echo "${v:2:12}"
+    line=$(head -n 3 $0 | tail -n 1)
+    echo "${line: 2:12}"
     exit 0
   fi
 }

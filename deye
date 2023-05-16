@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# deye v 1.9.0
+# deye v1.10.0
 # ©2022 barcek
 # License: MIT
 # @ github.com
@@ -46,7 +46,7 @@ opts_char_lines_list=$(echo $opts_char_lines | sed -E 's/(\\n)\s([^-])/\1\2/g'\
 
 opt_word_word=$(echo "$opt_word" | awk '{print $1}')
 
-# define utility functions
+# define utility functions, general
 
 handle_failure() {
   echo "${@}" >&2
@@ -55,14 +55,41 @@ handle_failure() {
 
 # define primary functions
 
+perform_self_test() {
+
+  # define utility functions, self-test
+  show_newlines() {
+    while read line; do echo "$line" | sed 's/$/\\n/g' | tr -d "\n"; done
+  }
+  run_test_case() {
+    [ "$2" = "$3" ] && echo "PASS: $1" || echo "FAIL: $1 | expected '$2' to equal '$3'"
+  }
+  # set expectations
+  exp_c_1="deno run --allow-read --allow-write --allow-run f1 a b"
+  exp_c_2="deno run --allow-read --allow-write --allow-run f2 a b"
+  exp_w_1="deno run --allow-all f1 a b"
+  exp_w_2="deno run --allow-all f2 a b"
+
+  run_test_case "arg_v/char" "$($0 -p rwx f1 a b)" "$exp_c_1"
+  run_test_case "arg_v/word" "$($0 -p all f1 a b)" "$exp_w_1"
+  run_test_case "mixed/char" "$(echo -e "f1 a b\nf2 a b" | $0 -p rwx | show_newlines)" "$exp_c_1\n$exp_c_2\n"
+  run_test_case "mixed/word" "$(echo -e "f1 a b\nf2 a b" | $0 -p all | show_newlines)" "$exp_w_1\n$exp_w_2\n"
+  run_test_case "stdin/char" "$(echo -e "rwx f1 a b\nrwx f2 a b" | $0 -p | show_newlines)" "$exp_c_1\n$exp_c_2\n"
+  run_test_case "stdin/word" "$(echo -e "all f1 a b\nall f2 a b" | $0 -p | show_newlines)" "$exp_w_1\n$exp_w_2\n"
+}
+
 handle_options_main() {
 
   if [ "$1" == "--help" ] || [ "$1" == "-h" ] || [ -z "$1" ]; then
     # show usage and shorthand lists then exit
-    usage="Usage: deye [--preview/-p] $opts_char_chars_list / $opt_word_word <remaining args> / --version/-v / --help/-h"
+    usage="Usage: deye [--preview/-p] $opts_char_chars_list / $opt_word_word <remaining args> / --version/-v / --help/-h / --test/-T"
     chars="Chars:\n $opts_char_lines_list"
     words="Words:\n $opt_word"
     echo -e "${usage}\n${chars}\n${words}"
+    exit 0
+
+  elif [ "$1" == "--test" ] || [ "$1" == "-T" ]; then
+    perform_self_test
     exit 0
 
   elif [ "$1" == "--version" ] || [ "$1" == "-v" ]; then
@@ -74,7 +101,7 @@ handle_options_main() {
   fi
 }
 
-handle_unknown() {
+fail_flags_unknown() {
 
   flags_unknown_n=${#1}
 
@@ -120,11 +147,11 @@ get_flags_to_pass() {
   fi
 
   # use flags accumulated
-  handle_unknown "${flags_unknown[*]}"
+  fail_flags_unknown "${flags_unknown[*]}"
   echo "${flags_to_pass[*]}"
 }
 
-get_pass_to_deno() {
+get_final_command() {
 
   # allow for nested exit
   set -e
@@ -137,7 +164,7 @@ get_pass_to_deno() {
   echo "deno run $flags_to_pass $all_remaining"
 }
 
-# initiate, generating and running each command
+# initiate, generating and applying each final command
 
 if [ "${#}" -eq 0 ]; then # assume all arguments passed via stdin, or none passed
 
@@ -155,9 +182,9 @@ if [ "${#}" -eq 0 ]; then # assume all arguments passed via stdin, or none passe
       all_remaining="${items[@]: 1}"
     fi
 
-    pass_to_deno="$(get_pass_to_deno $shorthand_str $all_remaining)"
-    if [[ true == $preview ]]; then echo $pass_to_deno; continue; fi
-    bash -c "$pass_to_deno"
+    final_command="$(get_final_command $shorthand_str $all_remaining)"
+    if [[ true == $preview ]]; then echo $final_command; continue; fi
+    bash -c "$final_command"
   done
 
   # if insufficient passed, show help text
@@ -182,9 +209,9 @@ elif [ "${#}" -eq 1 ] ||\
     shorthand_str="${@}"
     all_remaining="$line"
 
-    pass_to_deno="$(get_pass_to_deno $shorthand_str $all_remaining)"
-    if [[ true == $preview ]]; then echo $pass_to_deno; continue; fi
-    bash -c "$pass_to_deno"
+    final_command="$(get_final_command $shorthand_str $all_remaining)"
+    if [[ true == $preview ]]; then echo $final_command; continue; fi
+    bash -c "$final_command"
   done
 
 else # assume all arguments passed as args
@@ -200,7 +227,7 @@ else # assume all arguments passed as args
   shorthand_str="${@: 1:1}"
   all_remaining="${@: 2}"
 
-  pass_to_deno="$(get_pass_to_deno $shorthand_str $all_remaining)"
-  if [[ true == $preview ]]; then echo $pass_to_deno; exit 0; fi
-  bash -c "$pass_to_deno"
+  final_command="$(get_final_command $shorthand_str $all_remaining)"
+  if [[ true == $preview ]]; then echo $final_command; exit 0; fi
+  bash -c "$final_command"
 fi

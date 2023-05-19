@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# deye v1.10.4
+# deye v1.10.5
 # ©2022 barcek
 # License: MIT
 # @ github.com
@@ -35,8 +35,8 @@ opt_word="all --allow-all"
 
 # transform flag-string mappings to lists
 
-opts_char_chars=$(for ((i=0; i<${#opts_char[@]}; i++)); do echo    "${opts_char[$i]}" | awk '{print $1}';      done)
-opts_char_lines=$(for ((i=0; i<${#opts_char[@]}; i++)); do echo -e "${opts_char[$i]}" | awk '{print $0"\\n"}'; done)
+opts_char_chars=$(for ((i=0; i<${#opts_char[@]}; i++)); do echo    "${opts_char[$i]}" | awk '{ print $1 }';      done)
+opts_char_lines=$(for ((i=0; i<${#opts_char[@]}; i++)); do echo -e "${opts_char[$i]}" | awk '{ print $0"\\n" }'; done)
 
 opts_char_chars_list=$(echo $opts_char_chars | sed 's/ /|/g')
 opts_char_lines_list=$(echo $opts_char_lines | sed -E 's/(\\n)\s([^-])/\1\2/g'\
@@ -44,14 +44,14 @@ opts_char_lines_list=$(echo $opts_char_lines | sed -E 's/(\\n)\s([^-])/\1\2/g'\
                                              | sed -E 's/\\n$//'\
                                              | sed -E 's/\\n/\n /g')
 
-opt_word_word=$(echo "$opt_word" | awk '{print $1}')
+opt_word_word=$(echo "$opt_word" | awk '{ print $1 }')
 
 msg_fail_base="No permission or other option for character"
 
 # define utility functions, general
 
 handle_failure() {
-  echo "${@}" >&2
+  echo "$@" >&2
   exit 1
 }
 
@@ -99,7 +99,7 @@ handle_options_main() {
 
   elif [ "$1" == "--version" ] || [ "$1" == "-v" ]; then
     # show name and version number then exit
-    line=$(head -n 3 $0 | tail -n 1)
+    line=$(head -n 3 "$0" | tail -n 1)
     echo "${line: 2:12}"
     exit 0
   fi
@@ -110,7 +110,7 @@ fail_flags_unknown() {
   flags_v=$1
   flags_c=$2
 
-  if (( $flags_c > 0 )); then
+  if (( flags_c > 0 )); then
     case $flags_c in
       1) handle_failure "$msg_fail_base '$flags_v'";;
       2) handle_failure "$msg_fail_base '${flags_v: 0:1}' or '${flags_v: 2:1}'";;
@@ -170,20 +170,20 @@ get_final_command() {
 
 # initiate, generating and applying each final command
 
-if [ "${#}" -eq 0 ]; then # assume all arguments passed via stdin, or none passed
+if [ $# -eq 0 ]; then # assume all arguments passed via stdin, or none passed
 
   while read -r -t 0.1 line; do
 
     items=($(echo "$line" | tr " " "\n"))
 
     # handle option - preview
-    if [ "${items[@]: 0:1}" == "--preview" ] || [ "${items[@]: 0:1}" == "-p" ]; then
+    if [[ "${items[*]: 0:1}" == "--preview" ]] || [[ "${items[*]: 0:1}" == "-p" ]]; then
       preview=true
-      shorthand_str="${items[@]: 1:1}"
-      all_remaining="${items[@]: 2}"
+      shorthand_str="${items[*]: 1:1}"
+      all_remaining="${items[*]: 2}"
     else
-      shorthand_str="${items[@]: 0:1}"
-      all_remaining="${items[@]: 1}"
+      shorthand_str="${items[*]: 0:1}"
+      all_remaining="${items[*]: 1}"
     fi
 
     final_command="$(get_final_command $shorthand_str $all_remaining)"
@@ -196,21 +196,21 @@ if [ "${#}" -eq 0 ]; then # assume all arguments passed via stdin, or none passe
     handle_options_main
   fi
 
-elif [ "${#}" -eq 1 ] ||\
-   ( [ "${#}" -eq 2 ] && ( [ "$1" == "--preview" ] || [ "$1" == "-p" ] ) )
+elif [ "$#" -eq 1 ] ||\
+   ( [ "$#" -eq 2 ] && ( [[ "$1" == "--preview" ]] || [[ "$1" == "-p" ]] ) )
   then # assume shorthand string passed as arg, remainder via stdin
 
-  handle_options_main "${@}"
+  handle_options_main "$@"
 
   # handle option - preview
-  if [ "$1" == "--preview" ] || [ "$1" == "-p" ]; then
+  if [[ "$1" == "--preview" ]] || [[ "$1" == "-p" ]]; then
     preview=true
     shift
   fi
 
   while read -r line; do
 
-    shorthand_str="${@}"
+    shorthand_str="$@"
     all_remaining="$line"
 
     final_command="$(get_final_command $shorthand_str $all_remaining)"
@@ -220,10 +220,10 @@ elif [ "${#}" -eq 1 ] ||\
 
 else # assume all arguments passed as args
 
-  handle_options_main "${@}"
+  handle_options_main "$@"
 
   # handle option - preview
-  if [ "$1" == "--preview" ] || [ "$1" == "-p" ]; then
+  if [[ "$1" == "--preview" ]] || [[ "$1" == "-p" ]]; then
     preview=true
     shift
   fi

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# deye v1.10.1
+# deye v1.10.2
 # ©2022 barcek
 # License: MIT
 # @ github.com
@@ -65,16 +65,16 @@ perform_self_test() {
     [ "$2" = "$3" ] && echo "PASS: $1" || echo "FAIL: $1 | expected '$2' to equal '$3'"
   }
   # set expectations
-  exp_c_1="deno run --allow-read --allow-write --allow-run f1 a b"
-  exp_c_2="deno run --allow-read --allow-write --allow-run f2 a b"
+  exp_c_1="deno run --allow-read --config deno.json --import-map=import_map.json f1 a b"
+  exp_c_2="deno run --allow-read --config deno.json --import-map=import_map.json f2 a b"
   exp_w_1="deno run --allow-all f1 a b"
   exp_w_2="deno run --allow-all f2 a b"
 
-  run_test_case "arg_v/char" "$($0 -p rwx f1 a b)" "$exp_c_1"
+  run_test_case "arg_v/char" "$($0 -p rCI f1 a b)" "$exp_c_1"
   run_test_case "arg_v/word" "$($0 -p all f1 a b)" "$exp_w_1"
-  run_test_case "mixed/char" "$(echo -e "f1 a b\nf2 a b" | $0 -p rwx | show_newlines)" "$exp_c_1\n$exp_c_2\n"
+  run_test_case "mixed/char" "$(echo -e "f1 a b\nf2 a b" | $0 -p rCI | show_newlines)" "$exp_c_1\n$exp_c_2\n"
   run_test_case "mixed/word" "$(echo -e "f1 a b\nf2 a b" | $0 -p all | show_newlines)" "$exp_w_1\n$exp_w_2\n"
-  run_test_case "stdin/char" "$(echo -e "rwx f1 a b\nrwx f2 a b" | $0 -p | show_newlines)" "$exp_c_1\n$exp_c_2\n"
+  run_test_case "stdin/char" "$(echo -e "rCI f1 a b\nrCI f2 a b" | $0 -p | show_newlines)" "$exp_c_1\n$exp_c_2\n"
   run_test_case "stdin/word" "$(echo -e "all f1 a b\nall f2 a b" | $0 -p | show_newlines)" "$exp_w_1\n$exp_w_2\n"
 }
 

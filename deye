@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# deye v1.10.3
+# deye v1.10.4
 # ©2022 barcek
 # License: MIT
 # @ github.com
@@ -46,6 +46,8 @@ opts_char_lines_list=$(echo $opts_char_lines | sed -E 's/(\\n)\s([^-])/\1\2/g'\
 
 opt_word_word=$(echo "$opt_word" | awk '{print $1}')
 
+msg_fail_base="No permission or other option for character"
+
 # define utility functions, general
 
 handle_failure() {
@@ -76,6 +78,9 @@ perform_self_test() {
   run_test_case "mixed/word" "$(echo -e "f1 a b\nf2 a b" | $0 -p all | show_newlines)" "$exp_w_1\n$exp_w_2\n"
   run_test_case "stdin/char" "$(echo -e "rCI f1 a b\nrCI f2 a b" | $0 -p | show_newlines)" "$exp_c_1\n$exp_c_2\n"
   run_test_case "stdin/word" "$(echo -e "all f1 a b\nall f2 a b" | $0 -p | show_newlines)" "$exp_w_1\n$exp_w_2\n"
+  run_test_case "str/fail/1" "$($0 j f1 a b 2>&1)"   "$msg_fail_base 'j'"
+  run_test_case "str/fail/2" "$($0 jk f1 a b 2>&1)"  "$msg_fail_base 'j' or 'k'"
+  run_test_case "str/fail/3" "$($0 jkl f1 a b 2>&1)" "$msg_fail_base 'j', 'k' or 'l'"
 }
 
 handle_options_main() {
@@ -106,11 +111,10 @@ fail_flags_unknown() {
   flags_c=$2
 
   if (( $flags_c > 0 )); then
-    base="No permission or other option for character"
     case $flags_c in
-      1) handle_failure "$base '$flags_v'";;
-      2) handle_failure "$base '${flags_v: 0:1}' or '${flags_v: 2:1}'";;
-      *) handle_failure "$base $(echo "'${flags_v: 0:${#1}-2}'" | sed 's/ /", "/g' | tr "\"" "'")"\
+      1) handle_failure "$msg_fail_base '$flags_v'";;
+      2) handle_failure "$msg_fail_base '${flags_v: 0:1}' or '${flags_v: 2:1}'";;
+      *) handle_failure "$msg_fail_base $(echo "'${flags_v: 0:${#1}-2}'" | sed 's/ /", "/g' | tr "\"" "'")"\
                         "or '${flags_v: ${#1}-1}'";;
     esac
   fi

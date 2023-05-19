@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# deye v1.10.2
+# deye v1.10.3
 # ©2022 barcek
 # License: MIT
 # @ github.com
@@ -102,15 +102,16 @@ handle_options_main() {
 
 fail_flags_unknown() {
 
-  flags_unknown_n=${#1}
+  flags_v=$1
+  flags_c=$2
 
-  if (( $flags_unknown_n > 0 )); then
+  if (( $flags_c > 0 )); then
     base="No permission or other option for character"
-    case $flags_unknown_n in
-      1) handle_failure "$base $flags_unknown";;
-      2) handle_failure "$base ${flags_unknown[0]} or ${flags_unknown[1]}";;
-      *) handle_failure "$base $(echo ${flags_unknown[@]: 0:${#flags_unknown[@]}-1} | sed 's/ /, /g')"\
-                        "or ${flags_unknown[${#flags_unknown[@]}-1]}";;
+    case $flags_c in
+      1) handle_failure "$base '$flags_v'";;
+      2) handle_failure "$base '${flags_v: 0:1}' or '${flags_v: 2:1}'";;
+      *) handle_failure "$base $(echo "'${flags_v: 0:${#1}-2}'" | sed 's/ /", "/g' | tr "\"" "'")"\
+                        "or '${flags_v: ${#1}-1}'";;
     esac
   fi
 }
@@ -140,13 +141,13 @@ get_flags_to_pass() {
         fi
       done
       if [ false == $is_key ]; then
-        flags_unknown+=("'${1: $i:1}'")
+        flags_unknown+=("${1: $i:1}")
       fi
     done
   fi
 
   # use flags accumulated
-  fail_flags_unknown "${flags_unknown[*]}"
+  fail_flags_unknown "${flags_unknown[*]}" ${#flags_unknown[*]}
   echo "${flags_to_pass[*]}"
 }
 

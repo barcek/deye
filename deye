@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# deye v1.10.5
+# deye v1.10.6
 # ©2022 barcek
 # License: MIT
 # @ github.com
 # /barcek/deye
 
-# Assumes the use of Bash and the presence of AWK (Gawk), Deno, head, sed, tail and tr
+# Assumes the presence of Bash in '/bin', plus AWK (Gawk), Deno, head, sed, tail and tr
 
 # Accepts a set of characters (cf. $opts_char) or a word (-word)
 # as a shorthand for deno run options, plus any other arguments,
@@ -57,6 +57,17 @@ handle_failure() {
 
 # define primary functions
 
+present_help_text() {
+  lines=$(head -n 13 $1 | tail -n 5 | sed 's/$/\\n/')
+  echo "Usage: deye [--preview/-p] $opts_char_chars_list / $opt_word_word <remaining args> / --version/-v / --help/-h / --test/-T"
+  echo -e "Chars:\n $opts_char_lines_list"
+  echo -e "Words:\n $opt_word"
+  echo "Summary:"
+  echo -e $lines | sed 's/^ //g' | head -n 5 | tail -n 3 | sed 's/#//' | sed 's/\$opts_char/"Chars"/' | sed 's/-word/"Words"/' | tr "\"" "'"
+  echo "Context:"
+  echo -e $lines | sed 's/^ //g' | head -n 1 | sed 's/#//'
+}
+
 perform_self_test() {
 
   # define utility functions, self-test
@@ -86,11 +97,7 @@ perform_self_test() {
 handle_options_main() {
 
   if [ "$1" == "--help" ] || [ "$1" == "-h" ] || [ -z "$1" ]; then
-    # show usage and shorthand lists then exit
-    usage="Usage: deye [--preview/-p] $opts_char_chars_list / $opt_word_word <remaining args> / --version/-v / --help/-h / --test/-T"
-    chars="Chars:\n $opts_char_lines_list"
-    words="Words:\n $opt_word"
-    echo -e "${usage}\n${chars}\n${words}"
+    present_help_text $0
     exit 0
 
   elif [ "$1" == "--test" ] || [ "$1" == "-T" ]; then

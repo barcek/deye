@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# deye v1.10.6
+# deye v1.10.7
 # ©2022 barcek
 # License: MIT
 # @ github.com
@@ -31,20 +31,9 @@ opts_char=(
 "T --check"     # for 'types'
 "W --watch"
 )
-opt_word="all --allow-all"
+opt_word=("all" "--allow-all")
 
-# transform flag-string mappings to lists
-
-opts_char_chars=$(for ((i=0; i<${#opts_char[@]}; i++)); do echo    "${opts_char[$i]}" | awk '{ print $1 }';      done)
-opts_char_lines=$(for ((i=0; i<${#opts_char[@]}; i++)); do echo -e "${opts_char[$i]}" | awk '{ print $0"\\n" }'; done)
-
-opts_char_chars_list=$(echo $opts_char_chars | sed 's/ /|/g')
-opts_char_lines_list=$(echo $opts_char_lines | sed -E 's/(\\n)\s([^-])/\1\2/g'\
-                                             | sed -E 's/\s(-)/   \1/g'\
-                                             | sed -E 's/\\n$//'\
-                                             | sed -E 's/\\n/\n /g')
-
-opt_word_word=$(echo "$opt_word" | awk '{ print $1 }')
+# set other default values
 
 msg_fail_base="No permission or other option for character"
 
@@ -58,14 +47,20 @@ handle_failure() {
 # define primary functions
 
 present_help_text() {
-  lines=$(head -n 13 $1 | tail -n 5 | sed 's/$/\\n/')
-  echo "Usage: deye [--preview/-p] $opts_char_chars_list / $opt_word_word <remaining args> / --version/-v / --help/-h / --test/-T"
-  echo -e "Chars:\n $opts_char_lines_list"
-  echo -e "Words:\n $opt_word"
+
+  # transform flag-string mappings to lists
+  opts_char_range=$(echo $(for ((i=0; i<${#opts_char[*]}; i++)); do echo "${opts_char[$i]}" | awk '{ print $1 }'; done) | sed 's/ /|/g')
+  opts_char_lines=$(for ((i=0; i<${#opts_char[*]}; i++)); do echo -e "${opts_char[$i]}" | awk -v i=$i '{ print (i > 0 ? " " : "") $1 "   " $2 " " $3 }'; done)
+
+  # get notes and generate and print output
+  notes=$(head -n 13 $1 | tail -n 5 | sed 's/$/\\n/')
+  echo "Usage: deye [--preview/-p] $opts_char_range / ${opt_word[*]: 0:1} <remaining args> / --version/-v / --help/-h / --test/-T"
+  echo -e "Chars:\n $opts_char_lines"
+  echo -e "Words:\n ${opt_word[*]: 0:1} ${opt_word[*]: 1:1}"
   echo "Summary:"
-  echo -e $lines | sed 's/^ //g' | head -n 5 | tail -n 3 | sed 's/#//' | sed 's/\$opts_char/"Chars"/' | sed 's/-word/"Words"/' | tr "\"" "'"
+  echo -e $notes | sed 's/^ //g' | head -n 5 | tail -n 3 | sed 's/#//' | sed 's/\$opts_char/"Chars"/' | sed 's/-word/"Words"/' | tr "\"" "'"
   echo "Context:"
-  echo -e $lines | sed 's/^ //g' | head -n 1 | sed 's/#//'
+  echo -e $notes | sed 's/^ //g' | head -n 1 | sed 's/#//'
 }
 
 perform_self_test() {
@@ -134,9 +129,9 @@ get_flags_to_pass() {
   flags_unknown=()
 
   # accumulate for parameter no .1
-  if [ "$1" == "$opt_word_word" ]; then
+  if [ "$1" == "${opt_word[*]: 0:1}" ]; then
     # handle as specific full word
-    flag=$(echo "$opt_word" | awk '{$1=""; print $0}')
+    flag="${opt_word[*]: 1:1}"
     flags_to_pass+=("$flag")
   else
     # handle individual characters

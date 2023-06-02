@@ -1,12 +1,13 @@
 #!/bin/bash
 
-# deye v1.10.7
+# deye v1.10.8
 # ©2022 barcek
 # License: MIT
 # @ github.com
 # /barcek/deye
 
-# Assumes the presence of Bash in '/bin', plus AWK (Gawk), Deno, head, sed, tail and tr
+# Assumes the presence of Bash in '/bin', plus AWK (Gawk), Deno,
+# head, sed, tail and tr
 
 # Accepts a set of characters (cf. $opts_char) or a word (-word)
 # as a shorthand for deno run options, plus any other arguments,
@@ -53,14 +54,15 @@ present_help_text() {
   opts_char_lines=$(for ((i=0; i<${#opts_char[*]}; i++)); do echo -e "${opts_char[$i]}" | awk -v i=$i '{ print (i > 0 ? " " : "") $1 "   " $2 " " $3 }'; done)
 
   # get notes and generate and print output
-  notes=$(head -n 13 $1 | tail -n 5 | sed 's/$/\\n/')
-  echo "Usage: deye [--preview/-p] $opts_char_range / ${opt_word[*]: 0:1} <remaining args> / --version/-v / --help/-h / --test/-T"
+  notes=$(head -n 14 $1 | tail -n 6 | sed 's/$/\\n/')
+  echo "Usage: deye [--preview/-p] $opts_char_range / ${opt_word[*]: 0:1} [...] /"
+  echo "             --version/-v / --help/-h / --test/-T"
   echo -e "Chars:\n $opts_char_lines"
   echo -e "Words:\n ${opt_word[*]: 0:1} ${opt_word[*]: 1:1}"
   echo "Summary:"
-  echo -e $notes | sed 's/^ //g' | head -n 5 | tail -n 3 | sed 's/#//' | sed 's/\$opts_char/"Chars"/' | sed 's/-word/"Words"/' | tr "\"" "'"
+  echo -e $notes | sed 's/^ //g' | head -n 6 | tail -n 3 | sed 's/#//' | sed 's/\$opts_char/"Chars"/' | sed 's/-word/"Words"/' | tr "\"" "'"
   echo "Context:"
-  echo -e $notes | sed 's/^ //g' | head -n 1 | sed 's/#//'
+  echo -e $notes | sed 's/^ //g' | head -n 2 | sed 's/#//'
 }
 
 perform_self_test() {

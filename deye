@@ -1,13 +1,13 @@
 #!/bin/bash
 
-# deye v1.10.8
+# deye v1.11.0
 # ©2022 barcek
 # License: MIT
 # @ github.com
 # /barcek/deye
 
 # Assumes the presence of Bash in '/bin', plus AWK (Gawk), Deno,
-# head, sed, tail and tr
+# grep, head, sed, tail and tr
 
 # Accepts a set of characters (cf. $opts_char) or a word (-word)
 # as a shorthand for deno run options, plus any other arguments,
@@ -56,13 +56,22 @@ present_help_text() {
   # get notes and generate and print output
   notes=$(head -n 14 $1 | tail -n 6 | sed 's/$/\\n/')
   echo "Usage: deye [--preview/-p] $opts_char_range / ${opt_word[*]: 0:1} [...] /"
-  echo "             --version/-v / --help/-h / --test/-T"
+  echo "             --show/-s <char/word> / --version/-v / --help/-h / --test/-T"
   echo -e "Chars:\n $opts_char_lines"
   echo -e "Words:\n ${opt_word[*]: 0:1} ${opt_word[*]: 1:1}"
   echo "Summary:"
   echo -e $notes | sed 's/^ //g' | head -n 6 | tail -n 3 | sed 's/#//' | sed 's/\$opts_char/"Chars"/' | sed 's/-word/"Words"/' | tr "\"" "'"
   echo "Context:"
   echo -e $notes | sed 's/^ //g' | head -n 2 | sed 's/#//'
+}
+
+grep_options_text() {
+
+ # remove any argument part and escape prefix
+ flag=$(get_flags_to_pass $1 | tr "=" " " | awk '{ print $1 }' | sed 's/--/\\-\\-/g')
+
+ # filter with context
+ deno run --help | grep --color=always -B 3 -A 6 "$flag"
 }
 
 perform_self_test() {
@@ -95,6 +104,10 @@ handle_options_main() {
 
   if [ "$1" == "--help" ] || [ "$1" == "-h" ] || [ -z "$1" ]; then
     present_help_text $0
+    exit 0
+
+  elif [ "$1" == "--show" ] || [ "$1" == "-s" ]; then
+    grep_options_text $2
     exit 0
 
   elif [ "$1" == "--test" ] || [ "$1" == "-T" ]; then

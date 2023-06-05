@@ -8,11 +8,14 @@ The permissions flags are multiple characters in length and several may be requi
 
 ## How?
 
-The `deye` command takes as its first argument a string of characters - the shorthand string - representing the set of permissions or other options required. The string has one character per permission or other option (e.g. `r` to allow read), or is three characters long - `all` - to apply every permission at once.
+The `deye` command takes as its first argument a set of characters - the shorthand string - identifying the set of permissions or other options required. This string either:
+
+- has one character per permission or other option, e.g. `r` to allow read, or
+- is three characters long - `all` - to apply every permission at once
 
 Additional arguments usually passed directly to `deno run`, e.g. the file path and any arguments to that file, are passed to `deye` immediately after the shorthand string.
 
-```shell
+```
 deye <option_string> [<additional_arg>[ ...]]
 ```
 
@@ -79,7 +82,7 @@ The default path for `--config` is deno.json, and for `--import-map` import_map.
 
 **NB** Permission flag `--allow-sys` introduced in Deno v1.26.0. Retained for backward compatibility: `--compat` (mode removed in Deno v1.25.2).
 
-## Script
+## Source
 
 The script can be run with the command `./deye` while in the same directory, and from elsewhere using the pattern `path/to/deye`, by first making it executable, if not already, with `chmod +x deye`. Once executable, it can be run from any directory with the simpler `deye` by placing it in a directory listed on the `$PATH` environment variable, e.g. '/bin' or '/usr/bin'.
 
@@ -97,11 +100,12 @@ The following can be passed to `deye` before the shorthand string:
 
 The following can be passed to `deye` in place of the shorthand string:
 
+- `--show` / `-s`, to grep the `deno run` help text for the flag mapped to the next argument, e.g. for '--allow-read' with `-s r`, then exit
 - `--version` / `-v`, to show name and version number then exit
 - `--help` / `-h`, to show usage and a list of the characters and words available then exit
 - `--test` / `-T`, to perform the self-test then exit
 
-## Piping
+## Streams
 
 Sets of arguments can be piped to `deye` from another process, with each complete argument set occupying a single line and each line being handled individually.
 

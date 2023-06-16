@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# deye v1.11.0
+# deye v1.11.1
 # ©2022 barcek
 # License: MIT
 # @ github.com
@@ -11,7 +11,10 @@
 
 # Accepts a set of characters (cf. $opts_char) or a word (-word)
 # as a shorthand for deno run options, plus any other arguments,
-# via stdin and/or as args and passes w/ full flags to deno run
+# via stdin and/or as args and passes w/ full flags to deno run,
+# allowing for a preview of the command (using short flag '-p');
+# or shows the deno run help text via grep for a shorthand (-s),
+# or deye version (-v), help text (-h) or self-test results (-T)
 
 # map flags to shorthand string constituents
 
@@ -54,13 +57,13 @@ present_help_text() {
   opts_char_lines=$(for ((i=0; i<${#opts_char[*]}; i++)); do echo -e "${opts_char[$i]}" | awk -v i=$i '{ print (i > 0 ? " " : "") $1 "   " $2 " " $3 }'; done)
 
   # get notes and generate and print output
-  notes=$(head -n 14 $1 | tail -n 6 | sed 's/$/\\n/')
+  notes=$(head -n 17 $1 | tail -n 9 | sed 's/$/\\n/')
   echo "Usage: deye [--preview/-p] $opts_char_range / ${opt_word[*]: 0:1} [...] /"
   echo "             --show/-s <char/word> / --version/-v / --help/-h / --test/-T"
   echo -e "Chars:\n $opts_char_lines"
   echo -e "Words:\n ${opt_word[*]: 0:1} ${opt_word[*]: 1:1}"
   echo "Summary:"
-  echo -e $notes | sed 's/^ //g' | head -n 6 | tail -n 3 | sed 's/#//' | sed 's/\$opts_char/"Chars"/' | sed 's/-word/"Words"/' | tr "\"" "'"
+  echo -e $notes | sed 's/^ //g' | head -n 9 | tail -n 6 | sed 's/#//' | sed 's/\$opts_char/Chars list/' | sed 's/-word/Words/'
   echo "Context:"
   echo -e $notes | sed 's/^ //g' | head -n 2 | sed 's/#//'
 }

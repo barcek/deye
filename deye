@@ -1,13 +1,13 @@
 #!/bin/bash
 
-# deye v1.11.1
+# deye v1.11.2
 # ©2022 barcek
 # License: MIT
 # @ github.com
 # /barcek/deye
 
 # Assumes the presence of Bash in '/bin', plus AWK (Gawk), Deno,
-# grep, head, sed, tail and tr
+# grep, head, pr, sed, tail, tr and wc
 
 # Accepts a set of characters (cf. $opts_char) or a word (-word)
 # as a shorthand for deno run options, plus any other arguments,
@@ -50,16 +50,31 @@ handle_failure() {
 
 # define primary functions
 
+present_core_info() {
+  # extract and print name and version number
+  line=$(head -n 3 "$1" | tail -n 1)
+  echo "${line: 2:12}"
+}
+
 present_help_text() {
 
   # transform flag-string mappings to lists
   opts_char_range=$(echo $(for ((i=0; i<${#opts_char[*]}; i++)); do echo "${opts_char[$i]}" | awk '{ print $1 }'; done) | sed 's/ /|/g')
   opts_char_lines=$(for ((i=0; i<${#opts_char[*]}; i++)); do echo -e "${opts_char[$i]}" | awk -v i=$i '{ print (i > 0 ? " " : "") $1 "   " $2 " " $3 }'; done)
 
-  # get notes and generate and print output
+  # extract notes and get core info and generate and print output
   notes=$(head -n 17 $1 | tail -n 9 | sed 's/$/\\n/')
+  width=$(echo -e "$notes" | head -n 1 | wc -c)
+
+  core_info="$(present_core_info $1)"
+  indt=$((((${width} - ${#core_info} - 2) / 2) -1))
+  fill_l=$(echo "" | pr -To $indt | sed 's/ /-/g')
+  fill_r=$fill_l-
+
+  echo $fill_l "$core_info" $fill_r
   echo "Usage: deye [--preview/-p] $opts_char_range / ${opt_word[*]: 0:1} [...] /"
-  echo "             --show/-s <char/word> / --version/-v / --help/-h / --test/-T"
+  echo "             --show/-s <char/word> /"
+  echo "             --version/-v / --help/-h / --test/-T"
   echo -e "Chars:\n $opts_char_lines"
   echo -e "Words:\n ${opt_word[*]: 0:1} ${opt_word[*]: 1:1}"
   echo "Summary:"
@@ -118,9 +133,7 @@ handle_options_main() {
     exit 0
 
   elif [ "$1" == "--version" ] || [ "$1" == "-v" ]; then
-    # show name and version number then exit
-    line=$(head -n 3 "$0" | tail -n 1)
-    echo "${line: 2:12}"
+    present_core_info $0
     exit 0
   fi
 }

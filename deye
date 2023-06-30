@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# deye v1.11.2
+# deye v1.11.3
 # ©2022 barcek
 # License: MIT
 # @ github.com
@@ -62,14 +62,20 @@ present_help_text() {
   opts_char_range=$(echo $(for ((i=0; i<${#opts_char[*]}; i++)); do echo "${opts_char[$i]}" | awk '{ print $1 }'; done) | sed 's/ /|/g')
   opts_char_lines=$(for ((i=0; i<${#opts_char[*]}; i++)); do echo -e "${opts_char[$i]}" | awk -v i=$i '{ print (i > 0 ? " " : "") $1 "   " $2 " " $3 }'; done)
 
+  # define utility functions, help
+  get_fill() {
+    echo "" | pr -To $1 | sed 's/ /-/g'
+  }
   # extract notes and get core info and generate and print output
   notes=$(head -n 17 $1 | tail -n 9 | sed 's/$/\\n/')
   width=$(echo -e "$notes" | head -n 1 | wc -c)
 
   core_info="$(present_core_info $1)"
-  indt=$((((${width} - ${#core_info} - 2) / 2) -1))
-  fill_l=$(echo "" | pr -To $indt | sed 's/ /-/g')
-  fill_r=$fill_l-
+  diff=$((${width} - ${#core_info} - 2))
+  indt=$(($diff / 2 - 1))
+  rmdr=$(($diff % 2))
+  fill_l=$(get_fill $indt)
+  fill_r=$(get_fill $(($indt + $rmdr)))
 
   echo $fill_l "$core_info" $fill_r
   echo "Usage: deye [--preview/-p] $opts_char_range / ${opt_word[*]: 0:1} [...] /"

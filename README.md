@@ -2,24 +2,26 @@
 
 Pass permissions to `deno run` more easily.
 
+Generates and runs a long-form command via shorthands, with a preview option and self-test.
+
 ## Why?
 
-The permissions flags are multiple characters in length and several may be required to run a project. Including one or more in a given command can be relatively large overhead especially when prototyping, rapidly iterating or running occasional scripts.
+The permissions flags are multiple characters in length and several may be required to run a project. This can be a relatively large overhead especially when prototyping or running occasional scripts.
 
 ## How?
 
-The `deye` command takes as its first argument a set of characters - the shorthand string - identifying the set of permissions or other options required. This string either:
+The `deye` command takes as its first argument a shorthand string. This is a set of characters identifying the permissions or other options required, e.g. `rwx` represents `--allow-read`, `--allow-write` and `--allow-run`.
 
-- has one character per permission or other option, e.g. `r` to allow read, or
+Additional arguments usually passed directly to `deno run`, e.g. the file path and any arguments to the file, are passed to `deye` immediately after the shorthand string.
+
+```
+deye <shorthand_string> [<additional_arg>[ ...]]
+```
+
+The shorthand string either:
+
+- has one character per permission or other option, e.g. as above `r` to allow read, or
 - is three characters long - `all` - to apply every permission at once
-
-Additional arguments usually passed directly to `deno run`, e.g. the file path and any arguments to that file, are passed to `deye` immediately after the shorthand string.
-
-```
-deye <option_string> [<additional_arg>[ ...]]
-```
-
-To see the full command generated, without running it, the `--preview` or `-p` flag can be used (see [Options](#options) below).
 
 For the full set of shorthands available, see [Mapping](#mapping) below.
 
@@ -52,6 +54,10 @@ deye tcuCITW script.js
 ```
 
 The default path for `--config` is deno.json, and for `--import-map` import_map.json, per the Deno docs.
+
+### Preview
+
+To see the full command generated, without running it, the `--preview` or `-p` flag can be used (see [Options](#options) below).
 
 ## Mapping
 
@@ -88,6 +94,10 @@ The script can be run with the command `./deye` while in the same directory, and
 
 The hashbang at the top of the file assumes the presence of Bash in '/bin', the source code that several utils and Deno itself are installed. A list can be found close to the top of the file.
 
+### Defaults
+
+The mapping is defined close to the top of the source file.
+
 ### Making changes
 
 Running the self-test after making changes plus extending or adding test cases to cover new behaviour is recommended. The self-test is run with the `--test` or `-T` flag (see [Options](#options) below). The test cases are set in the `perform_self_test` function, which is the first primary function defined.
@@ -102,7 +112,7 @@ The following can be passed to `deye` in place of the shorthand string:
 
 - `--show` / `-s`, to grep the `deno run` help text for the flag mapped to the next argument, e.g. for '--allow-read' with `-s r`, then exit
 - `--version` / `-v`, to show name and version number then exit
-- `--help` / `-h`, to show usage and a list of the characters and words available then exit
+- `--help` / `-h`, to show help text, incl. the shorthands available, then exit
 - `--test` / `-T`, to perform the self-test then exit
 
 ## Streams

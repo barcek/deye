@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# deye v1.11.3
+# deye v1.11.4
 # ©2022 barcek
 # License: MIT
 # @ github.com
@@ -122,6 +122,11 @@ perform_self_test() {
   run_test_case "str/fail/1" "$($0 j f1 a b 2>&1)"   "$msg_fail_base 'j'"
   run_test_case "str/fail/2" "$($0 jk f1 a b 2>&1)"  "$msg_fail_base 'j' or 'k'"
   run_test_case "str/fail/3" "$($0 jkl f1 a b 2>&1)" "$msg_fail_base 'j', 'k' or 'l'"
+  run_test_case "str/s/char" "$([ "$($0 -s r | wc -l)" -gt 1 ] && echo True || echo False)" "True"
+  run_test_case "str/s/word" "$([ "$($0 -s all | wc -l)" -gt 1 ] && echo True || echo False)" "True"
+  run_test_case "str/v/full" "$($0 -v | grep -E "deye v([0-9]+\.){2}[0-9]+" | wc -l)" "1"
+  run_test_case "str/h/form" "$($0 -h | grep -E "(- deye v|Usage:|Chars:|Words:|Summary:|Context:)" | wc -l)" "6"
+  run_test_case "str/h/ln_c" "$($0 -h | wc -l)" "32"
 }
 
 handle_options_main() {

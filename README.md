@@ -6,7 +6,7 @@ Generates and runs a long-form command via shorthands, with a preview option and
 
 ## Why?
 
-The permissions flags are multiple characters in length and several may be required to run a project. This can be a relatively large overhead especially when prototyping or running occasional scripts.
+The permissions flags are reasonably long and several might be needed to run a project. This can be a relatively large overhead when prototyping or running occasional scripts.
 
 ## How?
 
@@ -53,7 +53,7 @@ The `--no-prompt`, `--compat`, `--unstable`, `--config`, `--import-map`, `--chec
 deye tcuCITW script.js
 ```
 
-The default path for `--config` is deno.json, and for `--import-map` import_map.json, per the Deno docs.
+The default path for `--config` is 'deno.json', and for `--import-map` 'import_map.json', per the Deno docs.
 
 ### Preview
 
@@ -92,7 +92,7 @@ To see the full command generated, without running it, the `--preview` or `-p` f
 
 The script can be run with the command `./deye` while in the same directory, and from elsewhere using the pattern `path/to/deye`, by first making it executable, if not already, with `chmod +x deye`. Once executable, it can be run from any directory with the simpler `deye` by placing it in a directory listed on the `$PATH` environment variable, e.g. '/bin' or '/usr/bin'.
 
-The hashbang at the top of the file assumes the presence of Bash in '/bin', the source code that several utils and Deno itself are installed. A list can be found close to the top of the file.
+The hashbang at the top of the file assumes the presence of Bash in '/bin', the source code that several utils and Deno itself are installed and can be invoked directly, e.g. Deno with `deno`. A list can be found close to the top of the file.
 
 ### Defaults
 
@@ -131,3 +131,11 @@ Alternatively, each line in a batch can include its own shorthand string:
 echo -e "r read.js\nw write.js\nx run.js" > cmds.txt
 cat cmds.txt | deye
 ```
+
+## Development plan
+
+The following are the expected next steps in the development of the code base. The general medium-term aim is a more portable and robust implementation. Pull requests are welcome for these and other potential improvements.
+
+- add automatic dependency checking with notification
+- modify the show option for contextual awareness
+- revise for full POSIX compatibility

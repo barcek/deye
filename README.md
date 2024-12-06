@@ -92,7 +92,7 @@ To see the full command generated, without running it, the `--preview` or `-p` f
 
 The script can be run with the command `./deye` while in the same directory, and from elsewhere using the pattern `path/to/deye`, by first making it executable, if not already, with `chmod +x deye`. Once executable, it can be run from any directory with the simpler `deye` by placing it in a directory listed on the `$PATH` environment variable, e.g. '/bin' or '/usr/bin'.
 
-The hashbang at the top of the file assumes the presence of Bash in '/bin', the source code that several utils and Deno itself are installed and can be invoked directly, e.g. Deno with `deno`. A list can be found close to the top of the file.
+The hashbang at the top of the file assumes the presence of Bash in '/bin', the source code that several utils and Deno itself are installed and can be invoked directly, e.g. Deno with `deno`. A list can be found close to the top of the file, and is printed also in the help text. In the event of any absence, the script will print the fact then exit.
 
 ### Defaults
 

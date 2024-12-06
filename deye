@@ -1,13 +1,13 @@
 #!/bin/bash
 
-# deye v1.11.4
+# deye v1.12.0
 # ©2022 barcek
 # License: MIT
 # @ github.com
 # /barcek/deye
 
-# Assumes the presence of Bash in '/bin', plus AWK (Gawk), Deno,
-# grep, head, pr, sed, tail, tr and wc
+# Assumes the presence of Bash in '/bin', plus Deno, AWK (Gawk),
+# command, grep, head, pr, sed, tail, tr and wc
 
 # Accepts a set of characters (cf. $opts_char) or a word (-word)
 # as a shorthand for deno run options, plus any other arguments,
@@ -15,6 +15,9 @@
 # allowing for a preview of the command (using short flag '-p');
 # or shows the deno run help text via grep for a shorthand (-s),
 # or deye version (-v), help text (-h) or self-test results (-T)
+
+cmds_assumed_present_plus=$(echo $(head -n 10 $0 | tail -n 2)\
+  | grep -oP "(?<=plus).*$" | tr -d "#,()" | sed 's/ and / /' | tr "AWKGD" "awkgd")
 
 # map flags to shorthand string constituents
 
@@ -40,6 +43,7 @@ opt_word=("all" "--allow-all")
 # set other default values
 
 msg_fail_base="No permission or other option for character"
+msg_fail_cmds="Absent command"
 
 # define utility functions, general
 
@@ -48,7 +52,34 @@ handle_failure() {
   exit 1
 }
 
-# define primary functions
+cmds_absent=()
+
+ensure_present() {
+
+  # accrue commands absent
+  for cmd in "${@: 2}"; do
+    if [[ -z "$(command -v $cmd)" ]]; then
+      cmds_absent+=($cmd)
+    fi
+  done
+
+  cmds_absent_n=${#cmds_absent[@]}
+
+  if (( $cmds_absent_n > 0 )); then
+    # produce one error for all commands
+    case $cmds_absent_n in
+      1) $1 "${msg_fail_cmds} $cmds_absent";;
+      2) $1 "${msg_fail_cmds}s ${cmds_absent[0]} and ${cmds_absent[1]}";;
+      *) $1 "${msg_fail_cmds}s $(echo ${cmds_absent[@]: 0:${#cmds_absent[@]}-1} | sed 's/ /, /g') and ${cmds_absent[${#cmds_absent[@]}-1]}";;
+    esac
+  fi
+}
+
+# ensure presence of commands
+
+ensure_present handle_failure $cmds_assumed_present_plus
+
+# define option handlers
 
 present_core_info() {
   # extract and print name and version number
@@ -122,6 +153,10 @@ perform_self_test() {
   run_test_case "str/fail/1" "$($0 j f1 a b 2>&1)"   "$msg_fail_base 'j'"
   run_test_case "str/fail/2" "$($0 jk f1 a b 2>&1)"  "$msg_fail_base 'j' or 'k'"
   run_test_case "str/fail/3" "$($0 jkl f1 a b 2>&1)" "$msg_fail_base 'j', 'k' or 'l'"
+  run_test_case "str/cmds/0" "$(ensure_present echo command)" ""
+  run_test_case "str/cmds/1" "$(ensure_present echo command_1)" "Absent command command_1"
+  run_test_case "str/cmds/2" "$(ensure_present echo command_1 command_2)" "Absent commands command_1 and command_2"
+  run_test_case "str/cmds/3" "$(ensure_present echo command_1 command_2 command_3)" "Absent commands command_1, command_2 and command_3"
   run_test_case "str/s/char" "$([ "$($0 -s r | wc -l)" -gt 1 ] && echo True || echo False)" "True"
   run_test_case "str/s/word" "$([ "$($0 -s all | wc -l)" -gt 1 ] && echo True || echo False)" "True"
   run_test_case "str/v/full" "$($0 -v | grep -E "deye v([0-9]+\.){2}[0-9]+" | wc -l)" "1"
@@ -149,11 +184,14 @@ handle_options_main() {
   fi
 }
 
+# define primary generation functions
+
 fail_flags_unknown() {
 
   flags_v=$1
   flags_c=$2
 
+  # produce one error for all flags
   if (( flags_c > 0 )); then
     case $flags_c in
       1) handle_failure "$msg_fail_base '$flags_v'";;

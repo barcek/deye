@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# deye v1.12.0
+# deye v1.13.0
 # ©2022 barcek
 # License: MIT
 # @ github.com
@@ -47,9 +47,13 @@ msg_fail_cmds="Absent command"
 
 # define utility functions, general
 
-handle_failure() {
+notify() {
   echo "$@" >&2
-  exit 1
+}
+
+handle_exit() {
+  [ -n "$2" ] && notify "${@: 2}"
+  exit $1
 }
 
 cmds_absent=()
@@ -68,16 +72,16 @@ ensure_present() {
   if (( $cmds_absent_n > 0 )); then
     # produce one error for all commands
     case $cmds_absent_n in
-      1) $1 "${msg_fail_cmds} $cmds_absent";;
-      2) $1 "${msg_fail_cmds}s ${cmds_absent[0]} and ${cmds_absent[1]}";;
-      *) $1 "${msg_fail_cmds}s $(echo ${cmds_absent[@]: 0:${#cmds_absent[@]}-1} | sed 's/ /, /g') and ${cmds_absent[${#cmds_absent[@]}-1]}";;
+      1) $1 1 "${msg_fail_cmds} $cmds_absent";;
+      2) $1 1 "${msg_fail_cmds}s ${cmds_absent[0]} and ${cmds_absent[1]}";;
+      *) $1 1 "${msg_fail_cmds}s $(echo ${cmds_absent[@]: 0:${#cmds_absent[@]}-1} | sed 's/ /, /g') and ${cmds_absent[${#cmds_absent[@]}-1]}";;
     esac
   fi
 }
 
 # ensure presence of commands
 
-ensure_present handle_failure $cmds_assumed_present_plus
+ensure_present handle_exit $cmds_assumed_present_plus
 
 # define option handlers
 
@@ -131,12 +135,20 @@ grep_options_text() {
 
 perform_self_test() {
 
+  count_case=0
+  count_pass=0
+
   # define utility functions, self-test
   show_newlines() {
     while read line; do echo "$line" | sed 's/$/\\n/g' | tr -d "\n"; done
   }
   run_test_case() {
-    [ "$2" = "$3" ] && echo "PASS: $1" || echo "FAIL: $1 | expected '$2' to equal '$3'"
+    ((count_case++))
+    if [ "$2" = "$3" ]; then
+      notify "✓ PASS: $1" && ((count_pass++))
+    else
+      notify "✕ FAIL: $1 | expected '$2' to equal '$3'"
+    fi
   }
   # set expectations
   exp_c_1="deno run --allow-read --config deno.json --import-map=import_map.json f1 a b"
@@ -150,18 +162,24 @@ perform_self_test() {
   run_test_case "mixed/word" "$(echo -e "f1 a b\nf2 a b" | $0 -p all | show_newlines)" "$exp_w_1\n$exp_w_2\n"
   run_test_case "stdin/char" "$(echo -e "rCI f1 a b\nrCI f2 a b" | $0 -p | show_newlines)" "$exp_c_1\n$exp_c_2\n"
   run_test_case "stdin/word" "$(echo -e "all f1 a b\nall f2 a b" | $0 -p | show_newlines)" "$exp_w_1\n$exp_w_2\n"
+  notify "------------------"
   run_test_case "str/fail/1" "$($0 j f1 a b 2>&1)"   "$msg_fail_base 'j'"
   run_test_case "str/fail/2" "$($0 jk f1 a b 2>&1)"  "$msg_fail_base 'j' or 'k'"
   run_test_case "str/fail/3" "$($0 jkl f1 a b 2>&1)" "$msg_fail_base 'j', 'k' or 'l'"
   run_test_case "str/cmds/0" "$(ensure_present echo command)" ""
-  run_test_case "str/cmds/1" "$(ensure_present echo command_1)" "Absent command command_1"
-  run_test_case "str/cmds/2" "$(ensure_present echo command_1 command_2)" "Absent commands command_1 and command_2"
-  run_test_case "str/cmds/3" "$(ensure_present echo command_1 command_2 command_3)" "Absent commands command_1, command_2 and command_3"
+  run_test_case "str/cmds/1" "$(ensure_present echo command_1)" "1 Absent command command_1"
+  run_test_case "str/cmds/2" "$(ensure_present echo command_1 command_2)" "1 Absent commands command_1 and command_2"
+  run_test_case "str/cmds/3" "$(ensure_present echo command_1 command_2 command_3)" "1 Absent commands command_1, command_2 and command_3"
+  notify "------------------"
   run_test_case "str/s/char" "$([ "$($0 -s r | wc -l)" -gt 1 ] && echo True || echo False)" "True"
   run_test_case "str/s/word" "$([ "$($0 -s all | wc -l)" -gt 1 ] && echo True || echo False)" "True"
   run_test_case "str/v/full" "$($0 -v | grep -E "deye v([0-9]+\.){2}[0-9]+" | wc -l)" "1"
   run_test_case "str/h/form" "$($0 -h | grep -E "(- deye v|Usage:|Chars:|Words:|Summary:|Context:)" | wc -l)" "6"
   run_test_case "str/h/ln_c" "$($0 -h | wc -l)" "32"
+  notify "------------------"
+
+  result="$count_pass/$count_case"
+  [ $count_pass -eq $count_case ] && handle_exit 0 "✓ $result" || handle_exit 1 "✕ $result"
 }
 
 handle_options_main() {
@@ -194,9 +212,9 @@ fail_flags_unknown() {
   # produce one error for all flags
   if (( flags_c > 0 )); then
     case $flags_c in
-      1) handle_failure "$msg_fail_base '$flags_v'";;
-      2) handle_failure "$msg_fail_base '${flags_v: 0:1}' or '${flags_v: 2:1}'";;
-      *) handle_failure "$msg_fail_base $(echo "'${flags_v: 0:${#1}-2}'" | sed 's/ /", "/g' | tr "\"" "'")"\
+      1) handle_exit 1 "$msg_fail_base '$flags_v'";;
+      2) handle_exit 1 "$msg_fail_base '${flags_v: 0:1}' or '${flags_v: 2:1}'";;
+      *) handle_exit 1 "$msg_fail_base $(echo "'${flags_v: 0:${#1}-2}'" | sed 's/ /", "/g' | tr "\"" "'")"\
                         "or '${flags_v: ${#1}-1}'";;
     esac
   fi

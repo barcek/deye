@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# deye v1.13.0
+# deye v1.13.1
 # ©2022 barcek
 # License: MIT
 # @ github.com
@@ -251,17 +251,14 @@ get_flags_to_pass() {
   fi
 
   # use flags accumulated
-  fail_flags_unknown "${flags_unknown[*]}" ${#flags_unknown[*]}
+  $(fail_flags_unknown "${flags_unknown[*]}" ${#flags_unknown[*]}) || exit
   echo "${flags_to_pass[*]}"
 }
 
 get_final_command() {
 
-  # allow for nested exit
-  set -e
-
   # assign argument sets
-  flags_to_pass="$(get_flags_to_pass $1)"
+  flags_to_pass="$(get_flags_to_pass $1)" || exit
   all_remaining="${@: 2}"
 
   # return full command
@@ -286,7 +283,7 @@ if [ $# -eq 0 ]; then # assume all arguments passed via stdin, or none passed
       all_remaining="${items[*]: 1}"
     fi
 
-    final_command="$(get_final_command $shorthand_str $all_remaining)"
+    final_command="$(get_final_command $shorthand_str $all_remaining)" || exit
     if [[ true == $preview ]]; then echo $final_command; continue; fi
     bash -c "$final_command"
   done
@@ -313,7 +310,7 @@ elif [ "$#" -eq 1 ] ||\
     shorthand_str="$@"
     all_remaining="$line"
 
-    final_command="$(get_final_command $shorthand_str $all_remaining)"
+    final_command="$(get_final_command $shorthand_str $all_remaining)" || exit
     if [[ true == $preview ]]; then echo $final_command; continue; fi
     bash -c "$final_command"
   done
@@ -331,7 +328,7 @@ else # assume all arguments passed as args
   shorthand_str="${@: 1:1}"
   all_remaining="${@: 2}"
 
-  final_command="$(get_final_command $shorthand_str $all_remaining)"
+  final_command="$(get_final_command $shorthand_str $all_remaining)" || exit
   if [[ true == $preview ]]; then echo $final_command; exit 0; fi
   bash -c "$final_command"
 fi

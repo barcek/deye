@@ -47,13 +47,13 @@ deye all script.js
 
 #### Other options
 
-The `--no-prompt`, `--compat`, `--unstable`, `--config`, `--import-map`, `--check` and `--watch` options are also available:
+The `--no-prompt`, `--no-npm`, `--no-remote`, `--config`, `--import-map`, `--check` and `--watch` options are also available, as are `--compat` and `--unstable`, since removed from Deno but retained here for backward compatibility. The former:
 
 ```shell
-deye tcuCITW script.js
+deye tNRCITW script.js
 ```
 
-The default path for `--config` is 'deno.json', and for `--import-map` 'import_map.json', per the Deno docs.
+The default path for `--config` is 'deno.json', and for `--import-map` 'import_map.json', per the Deno docs. For the removed `--unstable`, a range of granular instability options exist with `--unstable`-prefixed flags.
 
 ### Preview
 
@@ -65,12 +65,13 @@ To see the full command generated, without running it, the `--preview` or `-p` f
 
 - `e` --allow-env
 - `f` --allow-ffi
-- `h` --allow-hrtime
 - `n` --allow-net
+- `i` --allow-import
 - `s` --allow-sys
 - `r` --allow-read
 - `w` --allow-write
 - `x` --allow-run
+- `h` --allow-hrtime (cf. note below)
 
 ### Permissions - combined
 
@@ -79,14 +80,16 @@ To see the full command generated, without running it, the `--preview` or `-p` f
 ### Other options
 
 - `t` --no-prompt ('throw')
-- `c` --compat
-- `u` --unstable
+- `N` --no-npm
+- `R` --no-remote
 - `C` --config deno.json
 - `I` --import-map=import_map.json
 - `T` --check ('types')
 - `W` --watch
+- `c` --compat (cf. note below)
+- `u` --unstable (cf. note below)
 
-**NB** Permission flag `--allow-sys` introduced in Deno v1.26.0. Retained for backward compatibility: `--compat` (mode removed in Deno v1.25.2).
+**NB** Retained for backward compatibility: `--compat` (mode removed in Deno v1.25.2); `--allow-hrtime` (removed v2.0.0); `--unstable` (removed v2.0.0).
 
 ## Source
 
@@ -113,7 +116,7 @@ The following can be passed to `deye` in place of the shorthand string:
 - `--show` / `-s`, to grep the `deno run` help text for the flag mapped to the next argument, e.g. for '--allow-read' with `-s r`, then exit
 - `--version` / `-v`, to show name and version number then exit
 - `--help` / `-h`, to show help text, incl. the shorthands available, then exit
-- `--test` / `-T`, to perform the self-test then exit
+- `--test` / `-T`, to perform the self-test then exit, returning an exit code of 1 on failure
 
 ## Streams
 
@@ -136,6 +139,5 @@ cat cmds.txt | deye
 
 The following are the expected next steps in the development of the code base. The general medium-term aim is a more portable and robust implementation. Pull requests are welcome for these and other potential improvements.
 
-- add automatic dependency checking with notification
 - modify the show option for contextual awareness
 - revise for full POSIX compatibility

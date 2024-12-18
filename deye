@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# deye v1.13.1
+# deye v1.14.0
 # ©2022 barcek
 # License: MIT
 # @ github.com
@@ -24,19 +24,22 @@ cmds_assumed_present_plus=$(echo $(head -n 10 $0 | tail -n 2)\
 opts_char=(
 "e --allow-env"
 "f --allow-ffi"
-"h --allow-hrtime"
 "n --allow-net"
+"i --allow-import"
 "s --allow-sys"
 "r --allow-read"
 "w --allow-write"
 "x --allow-run"
+"h --allow-hrtime"
 "t --no-prompt" # for 'throw'
-"c --compat"
-"u --unstable"
+"N --no-npm"
+"R --no-remote"
 "C --config deno.json"
 "I --import-map=import_map.json"
 "T --check"     # for 'types'
 "W --watch"
+"c --compat"
+"u --unstable"
 )
 opt_word=("all" "--allow-all")
 
@@ -175,7 +178,7 @@ perform_self_test() {
   run_test_case "str/s/word" "$([ "$($0 -s all | wc -l)" -gt 1 ] && echo True || echo False)" "True"
   run_test_case "str/v/full" "$($0 -v | grep -E "deye v([0-9]+\.){2}[0-9]+" | wc -l)" "1"
   run_test_case "str/h/form" "$($0 -h | grep -E "(- deye v|Usage:|Chars:|Words:|Summary:|Context:)" | wc -l)" "6"
-  run_test_case "str/h/ln_c" "$($0 -h | wc -l)" "32"
+  run_test_case "str/h/ln_c" "$($0 -h | wc -l)" "35"
   notify "------------------"
 
   result="$count_pass/$count_case"

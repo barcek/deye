@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# deye v1.14.0
+# deye v1.14.1
 # ©2022 barcek
 # License: MIT
 # @ github.com
@@ -161,25 +161,33 @@ perform_self_test() {
 
   run_test_case "arg_v/char" "$($0 -p rCI f1 a b)" "$exp_c_1"
   run_test_case "arg_v/word" "$($0 -p all f1 a b)" "$exp_w_1"
-  run_test_case "mixed/char" "$(echo -e "f1 a b\nf2 a b" | $0 -p rCI | show_newlines)" "$exp_c_1\n$exp_c_2\n"
-  run_test_case "mixed/word" "$(echo -e "f1 a b\nf2 a b" | $0 -p all | show_newlines)" "$exp_w_1\n$exp_w_2\n"
-  run_test_case "stdin/char" "$(echo -e "rCI f1 a b\nrCI f2 a b" | $0 -p | show_newlines)" "$exp_c_1\n$exp_c_2\n"
-  run_test_case "stdin/word" "$(echo -e "all f1 a b\nall f2 a b" | $0 -p | show_newlines)" "$exp_w_1\n$exp_w_2\n"
-  notify "------------------"
-  run_test_case "str/fail/1" "$($0 j f1 a b 2>&1)"   "$msg_fail_base 'j'"
-  run_test_case "str/fail/2" "$($0 jk f1 a b 2>&1)"  "$msg_fail_base 'j' or 'k'"
+  run_test_case "mixed/char" "$(echo -e "f1 a b\nf2 a b"         | $0 -p rCI | show_newlines)" "$exp_c_1\n$exp_c_2\n"
+  run_test_case "mixed/word" "$(echo -e "f1 a b\nf2 a b"         | $0 -p all | show_newlines)" "$exp_w_1\n$exp_w_2\n"
+  run_test_case "stdin/char" "$(echo -e "rCI f1 a b\nrCI f2 a b" | $0 -p     | show_newlines)" "$exp_c_1\n$exp_c_2\n"
+  run_test_case "stdin/word" "$(echo -e "all f1 a b\nall f2 a b" | $0 -p     | show_newlines)" "$exp_w_1\n$exp_w_2\n"
+  notify "--------------------"
+  run_test_case "str/s/c/char" "$([ "$($0 -s r       | wc -l)" -gt 1 ] && echo True || echo False)" "True"
+  run_test_case "str/s/c/word" "$([ "$($0 -s all     | wc -l)" -gt 1 ] && echo True || echo False)" "True"
+  run_test_case "str/s/w/char" "$([ "$($0 --show r   | wc -l)" -gt 1 ] && echo True || echo False)" "True"
+  run_test_case "str/s/w/word" "$([ "$($0 --show all | wc -l)" -gt 1 ] && echo True || echo False)" "True"
+  notify "--------------------"
+  run_test_case "str/fail/1" "$($0 j   f1 a b 2>&1)" "$msg_fail_base 'j'"
+  run_test_case "str/fail/2" "$($0 jk  f1 a b 2>&1)" "$msg_fail_base 'j' or 'k'"
   run_test_case "str/fail/3" "$($0 jkl f1 a b 2>&1)" "$msg_fail_base 'j', 'k' or 'l'"
-  run_test_case "str/cmds/0" "$(ensure_present echo command)" ""
-  run_test_case "str/cmds/1" "$(ensure_present echo command_1)" "1 Absent command command_1"
-  run_test_case "str/cmds/2" "$(ensure_present echo command_1 command_2)" "1 Absent commands command_1 and command_2"
-  run_test_case "str/cmds/3" "$(ensure_present echo command_1 command_2 command_3)" "1 Absent commands command_1, command_2 and command_3"
   notify "------------------"
-  run_test_case "str/s/char" "$([ "$($0 -s r | wc -l)" -gt 1 ] && echo True || echo False)" "True"
-  run_test_case "str/s/word" "$([ "$($0 -s all | wc -l)" -gt 1 ] && echo True || echo False)" "True"
-  run_test_case "str/v/full" "$($0 -v | grep -E "deye v([0-9]+\.){2}[0-9]+" | wc -l)" "1"
-  run_test_case "str/h/form" "$($0 -h | grep -E "(- deye v|Usage:|Chars:|Words:|Summary:|Context:)" | wc -l)" "6"
-  run_test_case "str/h/ln_c" "$($0 -h | wc -l)" "35"
-  notify "------------------"
+  run_test_case "str/cmds/0" "$(ensure_present echo command)"                       ""
+  run_test_case "str/cmds/1" "$(ensure_present echo command_1)"                     "1 ${msg_fail_cmds} command_1"
+  run_test_case "str/cmds/2" "$(ensure_present echo command_1 command_2)"           "1 ${msg_fail_cmds}s command_1 and command_2"
+  run_test_case "str/cmds/3" "$(ensure_present echo command_1 command_2 command_3)" "1 ${msg_fail_cmds}s command_1, command_2 and command_3"
+  notify "--------------------"
+  run_test_case "str/v/c/full" "$($0 -v        | grep -E "deye v([0-9]+\.){2}[0-9]+" | wc -l)" "1"
+  run_test_case "str/v/w/full" "$($0 --version | grep -E "deye v([0-9]+\.){2}[0-9]+" | wc -l)" "1"
+  notify "--------------------"
+  run_test_case "str/h/c/form" "$($0 -h     | grep -E "(- deye v|Usage:|Chars:|Words:|Summary:|Context:)" | wc -l)" "6"
+  run_test_case "str/h/c/ln_c" "$($0 -h     | wc -l)" "35"
+  run_test_case "str/h/w/form" "$($0 --help | grep -E "(- deye v|Usage:|Chars:|Words:|Summary:|Context:)" | wc -l)" "6"
+  run_test_case "str/h/w/ln_c" "$($0 --help | wc -l)" "35"
+  notify "--------------------"
 
   result="$count_pass/$count_case"
   [ $count_pass -eq $count_case ] && handle_exit 0 "✓ $result" || handle_exit 1 "✕ $result"

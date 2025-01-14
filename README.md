@@ -4,6 +4,8 @@ Pass permissions to `deno run` more easily.
 
 Generates and runs a long-form command via shorthands, with a preview option and self-test.
 
+Available over a Deno base image via the Dockerfile in [shipping](https://github.com/barcek/shipping).
+
 ## Why?
 
 The permissions flags are reasonably long and several might be needed to run a project. This can be a relatively large overhead when prototyping or running occasional scripts.
@@ -103,7 +105,7 @@ The mapping is defined close to the top of the source file.
 
 ### Making changes
 
-Running the self-test after making changes plus extending or adding test cases to cover new behaviour is recommended. The self-test is run with the `--test` or `-T` flag (see [Options](#options) below). The test cases are set in the `perform_self_test` function, which is the first primary function defined.
+Running the self-test after making changes plus extending or adding test cases to cover new behaviour is recommended. The self-test is run with the `--test` or `-T` flag (see [Options](#options) below). The test cases are set in the `perform_self_test` function, which is defined with the other option handlers.
 
 ## Options
 

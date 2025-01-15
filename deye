@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# deye v1.14.1
+# deye v1.14.2
 # ©2022 barcek
 # License: MIT
 # @ github.com
@@ -129,11 +129,13 @@ present_help_text() {
 
 grep_options_text() {
 
- # remove any argument part and escape prefix
- flag=$(get_flags_to_pass $1 | tr "=" " " | awk '{ print $1 }' | sed 's/--/\\-\\-/g')
+  # remove any argument part and escape prefix
+  flag=$(get_flags_to_pass $1 | tr "=" " " | awk '{ print $1 }' | sed 's/--/\\-\\-/g')
 
- # filter with context
- deno run --help | grep --color=always -B 3 -A 6 "$flag"
+  if [ -n "$flag" ]; then
+    # filter with context
+    deno run --help | grep --color=always -B 3 -A 6 "$flag"
+  fi
 }
 
 perform_self_test() {
@@ -165,12 +167,16 @@ perform_self_test() {
   run_test_case "mixed/word" "$(echo -e "f1 a b\nf2 a b"         | $0 -p all | show_newlines)" "$exp_w_1\n$exp_w_2\n"
   run_test_case "stdin/char" "$(echo -e "rCI f1 a b\nrCI f2 a b" | $0 -p     | show_newlines)" "$exp_c_1\n$exp_c_2\n"
   run_test_case "stdin/word" "$(echo -e "all f1 a b\nall f2 a b" | $0 -p     | show_newlines)" "$exp_w_1\n$exp_w_2\n"
-  notify "--------------------"
-  run_test_case "str/s/c/char" "$([ "$($0 -s r       | wc -l)" -gt 1 ] && echo True || echo False)" "True"
-  run_test_case "str/s/c/word" "$([ "$($0 -s all     | wc -l)" -gt 1 ] && echo True || echo False)" "True"
-  run_test_case "str/s/w/char" "$([ "$($0 --show r   | wc -l)" -gt 1 ] && echo True || echo False)" "True"
-  run_test_case "str/s/w/word" "$([ "$($0 --show all | wc -l)" -gt 1 ] && echo True || echo False)" "True"
-  notify "--------------------"
+  notify "-------------------------"
+  run_test_case "str/s/c/char/some" "$([ "$($0 -s r       | wc -l)" -gt 1 ] && echo True || echo False)" "True"
+  run_test_case "str/s/c/char/none" "$([ "$($0 -s c       | wc -l)" -eq 0 ] && echo True || echo False)" "True"
+  run_test_case "str/s/c/char/fail"      "$($0 -s z     2>&1     )"                                      "$msg_fail_base 'z'"
+  run_test_case "str/s/c/word"      "$([ "$($0 -s all     | wc -l)" -gt 1 ] && echo True || echo False)" "True"
+  run_test_case "str/s/w/char/some" "$([ "$($0 --show r   | wc -l)" -gt 1 ] && echo True || echo False)" "True"
+  run_test_case "str/s/w/char/none" "$([ "$($0 --show c   | wc -l)" -eq 0 ] && echo True || echo False)" "True"
+  run_test_case "str/s/w/char/fail"      "$($0 --show z 2>&1     )"                                      "$msg_fail_base 'z'"
+  run_test_case "str/s/w/word"      "$([ "$($0 --show all | wc -l)" -gt 1 ] && echo True || echo False)" "True"
+  notify "-------------------------"
   run_test_case "str/fail/1" "$($0 j   f1 a b 2>&1)" "$msg_fail_base 'j'"
   run_test_case "str/fail/2" "$($0 jk  f1 a b 2>&1)" "$msg_fail_base 'j' or 'k'"
   run_test_case "str/fail/3" "$($0 jkl f1 a b 2>&1)" "$msg_fail_base 'j', 'k' or 'l'"

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# deye v1.14.2
+# deye v1.14.3
 # ©2022 barcek
 # License: MIT
 # @ github.com
@@ -45,7 +45,7 @@ opt_word=("all" "--allow-all")
 
 # set other default values
 
-msg_fail_base="No permission or other option for character"
+msg_fail_opts="No permission or other option for character"
 msg_fail_cmds="Absent command"
 
 # define utility functions, general
@@ -168,23 +168,23 @@ perform_self_test() {
   run_test_case "stdin/char" "$(echo -e "rCI f1 a b\nrCI f2 a b" | $0 -p     | show_newlines)" "$exp_c_1\n$exp_c_2\n"
   run_test_case "stdin/word" "$(echo -e "all f1 a b\nall f2 a b" | $0 -p     | show_newlines)" "$exp_w_1\n$exp_w_2\n"
   notify "-------------------------"
-  run_test_case "str/s/c/char/some" "$([ "$($0 -s r       | wc -l)" -gt 1 ] && echo True || echo False)" "True"
-  run_test_case "str/s/c/char/none" "$([ "$($0 -s c       | wc -l)" -eq 0 ] && echo True || echo False)" "True"
-  run_test_case "str/s/c/char/fail"      "$($0 -s z     2>&1     )"                                      "$msg_fail_base 'z'"
-  run_test_case "str/s/c/word"      "$([ "$($0 -s all     | wc -l)" -gt 1 ] && echo True || echo False)" "True"
-  run_test_case "str/s/w/char/some" "$([ "$($0 --show r   | wc -l)" -gt 1 ] && echo True || echo False)" "True"
-  run_test_case "str/s/w/char/none" "$([ "$($0 --show c   | wc -l)" -eq 0 ] && echo True || echo False)" "True"
-  run_test_case "str/s/w/char/fail"      "$($0 --show z 2>&1     )"                                      "$msg_fail_base 'z'"
-  run_test_case "str/s/w/word"      "$([ "$($0 --show all | wc -l)" -gt 1 ] && echo True || echo False)" "True"
+  run_test_case "str/s/c/char/some" "$([ "$($0 -s r       | wc -l)" -gt 1 ] && echo "Some found" || echo "None found")" "Some found"
+  run_test_case "str/s/c/char/none" "$([ "$($0 -s c       | wc -l)" -eq 0 ] && echo "None found" || echo "Some found")" "None found"
+  run_test_case "str/s/c/char/fail"      "$($0 -s z     2>&1 | show_newlines)"                                          "$msg_fail_opts 'z'\n"
+  run_test_case "str/s/c/word"      "$([ "$($0 -s all     | wc -l)" -gt 1 ] && echo "Some found" || echo "None found")" "Some found"
+  run_test_case "str/s/w/char/some" "$([ "$($0 --show r   | wc -l)" -gt 1 ] && echo "Some found" || echo "None found")" "Some found"
+  run_test_case "str/s/w/char/none" "$([ "$($0 --show c   | wc -l)" -eq 0 ] && echo "None found" || echo "Some found")" "None found"
+  run_test_case "str/s/w/char/fail"      "$($0 --show z 2>&1 | show_newlines)"                                          "$msg_fail_opts 'z'\n"
+  run_test_case "str/s/w/word"      "$([ "$($0 --show all | wc -l)" -gt 1 ] && echo "Some found" || echo "None found")" "Some found"
   notify "-------------------------"
-  run_test_case "str/fail/1" "$($0 j   f1 a b 2>&1)" "$msg_fail_base 'j'"
-  run_test_case "str/fail/2" "$($0 jk  f1 a b 2>&1)" "$msg_fail_base 'j' or 'k'"
-  run_test_case "str/fail/3" "$($0 jkl f1 a b 2>&1)" "$msg_fail_base 'j', 'k' or 'l'"
+  run_test_case "str/fail/1" "$($0 j   f1 a b 2>&1 | show_newlines)" "$msg_fail_opts 'j'\n"
+  run_test_case "str/fail/2" "$($0 jk  f1 a b 2>&1 | show_newlines)" "$msg_fail_opts 'j' or 'k'\n"
+  run_test_case "str/fail/3" "$($0 jkl f1 a b 2>&1 | show_newlines)" "$msg_fail_opts 'j', 'k' or 'l'\n"
   notify "------------------"
-  run_test_case "str/cmds/0" "$(ensure_present echo command)"                       ""
-  run_test_case "str/cmds/1" "$(ensure_present echo command_1)"                     "1 ${msg_fail_cmds} command_1"
-  run_test_case "str/cmds/2" "$(ensure_present echo command_1 command_2)"           "1 ${msg_fail_cmds}s command_1 and command_2"
-  run_test_case "str/cmds/3" "$(ensure_present echo command_1 command_2 command_3)" "1 ${msg_fail_cmds}s command_1, command_2 and command_3"
+  run_test_case "str/cmds/0" "$(ensure_present echo command           | show_newlines)" ""
+  run_test_case "str/cmds/1" "$(ensure_present echo cmd_1             | show_newlines)" "1 ${msg_fail_cmds} cmd_1\n"
+  run_test_case "str/cmds/2" "$(ensure_present echo cmd_1 cmd_2       | show_newlines)" "1 ${msg_fail_cmds}s cmd_1 and cmd_2\n"
+  run_test_case "str/cmds/3" "$(ensure_present echo cmd_1 cmd_2 cmd_3 | show_newlines)" "1 ${msg_fail_cmds}s cmd_1, cmd_2 and cmd_3\n"
   notify "--------------------"
   run_test_case "str/v/c/full" "$($0 -v        | grep -E "deye v([0-9]+\.){2}[0-9]+" | wc -l)" "1"
   run_test_case "str/v/w/full" "$($0 --version | grep -E "deye v([0-9]+\.){2}[0-9]+" | wc -l)" "1"
@@ -229,9 +229,9 @@ fail_flags_unknown() {
   # produce one error for all flags
   if (( flags_c > 0 )); then
     case $flags_c in
-      1) handle_exit 1 "$msg_fail_base '$flags_v'";;
-      2) handle_exit 1 "$msg_fail_base '${flags_v: 0:1}' or '${flags_v: 2:1}'";;
-      *) handle_exit 1 "$msg_fail_base $(echo "'${flags_v: 0:${#1}-2}'" | sed 's/ /", "/g' | tr "\"" "'")"\
+      1) handle_exit 1 "$msg_fail_opts '$flags_v'";;
+      2) handle_exit 1 "$msg_fail_opts '${flags_v: 0:1}' or '${flags_v: 2:1}'";;
+      *) handle_exit 1 "$msg_fail_opts $(echo "'${flags_v: 0:${#1}-2}'" | sed 's/ /", "/g' | tr "\"" "'")"\
                         "or '${flags_v: ${#1}-1}'";;
     esac
   fi
